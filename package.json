@@ -1,0 +1,15 @@
+{
+  "name": "aiub-notice-bot",
+  "version": "0.1.0",
+  "description": "A notice bot which fetch notice aiub page to discord",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "author": "Xenon Colt",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.5"
+  }
+}
