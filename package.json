@@ -1,8 +1,9 @@
 {
   "name": "aiub-notice-bot",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A notice bot which fetch notice aiub page to discord",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "node index.js"
   },
@@ -10,6 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "discord.js": "^14.14.1",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "jsdom": "^24.0.0",
+    "node-fetch": "^3.3.2"
   }
 }
