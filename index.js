@@ -12,6 +12,7 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
+import { schedule } from "node-cron";
 // const dotenv = require("dotenv");
 import dotenv from "dotenv";
 import { assert } from "console";
@@ -75,6 +76,9 @@ for (const file of cmdFiles) {
 //     }
 // })();
 
+// store last notice
+let lastNotice = null;
+
 // start bot
 client.once("ready", async () => {
     console.log(`${client.user.tag} Bot is ready!`);
@@ -104,11 +108,12 @@ client.once("ready", async () => {
         console.error('Failed to reload application (/) commands.', error);
     }
 
-    fetchNotice();
+    // fetchNotice();
+
+    schedule('*/5 * * * *', fetchNotice);
 });
 
 client.on("interactionCreate", async (interaction) => {
-    
     if (!interaction.isCommand()) return;
 
     const command = client.commands.get(interaction.commandName);
@@ -135,6 +140,13 @@ async function fetchNotice() {
         const link_info = document.querySelector('.info-link').href;
 
         const link = `${config.url}${link_info}`;
+
+        // check last notice or not
+        if (title === lastNotice) {
+            return;
+        }
+
+        lastNotice = title;
 
         // const channel = client.channels.cache.get(config.channel_id);
         // Fetch channel ID from database instead of config file
