@@ -19,7 +19,8 @@ let db;
     await db.run(`
         CREATE TABLE IF NOT EXISTS channel (
             guild_id TEXT,
-            channel_id TEXT
+            channel_id TEXT,
+            UNIQUE(guild_id, channel_id)
         )
     `);
 })();
@@ -61,7 +62,7 @@ export default {
         const channelId = interaction.options.getChannel('channel').id;
 
         if (sub_cmd === 'set') {
-            await db.run('INSERT INTO channel (guild_id, channel_id) VALUES (?, ?)', [interaction.guild.id, channelId]);
+            await db.run('INSERT OR IGNORE INTO channel (guild_id, channel_id) VALUES (?, ?)', [interaction.guild.id, channelId]);
             await interaction.editReply('Channel has been set!');
         } else if (sub_cmd === 'reset') {
             await db.run('DELETE FROM channel WHERE guild_id = ? AND channel_id = ?', [interaction.guild.id, channelId]);
