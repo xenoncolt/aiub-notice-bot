@@ -1,5 +1,6 @@
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
+import { PermissionFlagsBits } from "discord.js";
 
 // Database thing
 let db;
@@ -62,6 +63,14 @@ export default {
         const channelId = interaction.options.getChannel('channel').id;
 
         if (sub_cmd === 'set') {
+            const channel = interaction.options.getChannel('channel');
+            const permissions = channel.permissionsFor(interaction.client.user);
+
+            if (!permissions.has(PermissionFlagsBits.SendMessages) || !permissions.has(PermissionFlagsBits.EmbedLinks)) {
+                await interaction.editReply(`Please give **Send Messages** and **Embed Links** permission to ${channel} channel.`);
+                return;
+            }
+
             await db.run('INSERT OR IGNORE INTO channel (guild_id, channel_id) VALUES (?, ?)', [interaction.guild.id, channelId]);
             await interaction.editReply('Channel has been set!');
         } else if (sub_cmd === 'reset') {
