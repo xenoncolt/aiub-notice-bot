@@ -12,10 +12,10 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
-import { schedule } from "node-cron";
 // const dotenv = require("dotenv");
 import dotenv from "dotenv";
 import { assert } from "console";
+import { type } from "os";
 dotenv.config();
 
 // Database thing
@@ -32,7 +32,12 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.DirectMessages,
+        GatewayIntentBits.DirectMessageReactions,
+        GatewayIntentBits.DirectMessageTyping,
+        GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildPresences
     ]
 });
 
@@ -109,8 +114,7 @@ client.once("ready", async () => {
     }
 
     // fetchNotice();
-
-    schedule('*/5 * * * *', fetchNotice);
+    setInterval(fetchNotice, 5 * 60 * 1000);
 });
 
 client.on("interactionCreate", async (interaction) => {
@@ -149,8 +153,6 @@ async function fetchNotice() {
         lastNotice = title;
 
         // const channel = client.channels.cache.get(config.channel_id);
-        // Fetch channel ID from database instead of config file
-        const rows = await db.all('SELECT channel_id FROM channel WHERE guild_id = ?', client.guilds.cache.first().id);
 
         if (rows.length > 0) {
             for (const row of rows) {
