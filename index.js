@@ -113,6 +113,22 @@ client.once("ready", async () => {
         console.error('Failed to reload application (/) commands.', error);
     }
 
+    // Set status
+    let statusIndex = 0;
+    setInterval(() => {
+        const sts = [
+            {  name: `custom`, type: 4, state: `🪧Latest notice: ${lastNotice}` },
+            {  name: `with ${client.guilds.cache.size} servers`, type: 0 }
+        ];
+        client.user.setPresence({
+            activities: [sts[statusIndex]],
+            status: 'idle'
+        });
+
+        statusIndex = (statusIndex + 1) % sts.length;
+    }, 1 * 60 * 1000);
+
+
     // fetchNotice();
     setInterval(fetchNotice, 5 * 60 * 1000);
 });
