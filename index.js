@@ -153,6 +153,11 @@ async function fetchNotice() {
         lastNotice = title;
 
         // const channel = client.channels.cache.get(config.channel_id);
+        for (const guild of client.guilds.cache.values()) {
+            // Fetch channel ID from database instead of config file
+        const rows = await db.all('SELECT channel_id FROM channel WHERE guild_id = ?', guild.id);
+
+        console.log(title);
 
         if (rows.length > 0) {
             for (const row of rows) {
@@ -166,11 +171,12 @@ async function fetchNotice() {
                         .setURL(link)
                         .setColor("Green")
                         .setTimestamp();
-                    channel.send( { embeds: [embed]});
+                    await channel.send( { embeds: [embed]});
                 }
             }
         } else {
             console.log('No channels found in the database for the guild')
+        }
         }
     } catch (error) {
         console.error('Failed to catch notice: ', error);
