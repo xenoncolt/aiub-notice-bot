@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, EmbedBuilder } from "discord.js";
+import { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import config from "./config.json" assert { type: "json" };
@@ -130,7 +130,7 @@ client.once("ready", async () => {
 
 
     // fetchNotice();
-    setInterval(fetchNotice, 5 * 60 * 1000);
+    setInterval(fetchNotice, 1 * 60 * 1000);
 });
 
 client.on("interactionCreate", async (interaction) => {
@@ -187,7 +187,16 @@ async function fetchNotice() {
                         .setURL(link)
                         .setColor("Green")
                         .setTimestamp();
-                    await channel.send( { embeds: [embed]});
+
+                    const link_btn = new ActionRowBuilder()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel('Details')
+                                .setStyle(ButtonStyle.Link)
+                                .setURL(link)
+                        );
+
+                    await channel.send( { embeds: [embed], components: [link_btn] } );
                 }
             }
         } else {
