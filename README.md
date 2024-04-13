@@ -7,7 +7,7 @@ AUIB Notice Bot is a Discord bot that sends the latest notice from the [AUIB Web
 - [x] Embed Message
 - [ ] Slash Commands : Bot information, New notice
 - [x] Setup and Reset Channel
-- [ ] Details Buttons
+- [x] Details Buttons
 - [ ] News & Events
 - [x] Show new notice on status
 - [ ] Academic Calender
