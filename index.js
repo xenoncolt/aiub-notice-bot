@@ -184,6 +184,9 @@ async function fetchNotice() {
         const title = document.querySelector('.title').textContent;
         const desc = document.querySelector('.desc').textContent;
         const link_info = document.querySelector('.info-link').href;
+        const day = document.querySelector('time .day').textContent;
+        const month = document.querySelector('time .month').textContent;
+        const year = document.querySelector('time .year').textContent;
 
         const link = `${config.url}${link_info}`;
 
@@ -210,6 +213,9 @@ async function fetchNotice() {
                     const embed = new EmbedBuilder()
                         .setTitle(title)
                         .setDescription(desc)
+                        .addFields(
+                            { name: 'Published Date:', value: `${day} ${month} ${year}`}
+                        )
                         .setURL(link)
                         .setColor("Green")
                         .setTimestamp();
