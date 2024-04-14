@@ -130,7 +130,7 @@ client.once("ready", async () => {
 
 
     // fetchNotice();
-    setInterval(fetchNotice, 1 * 60 * 1000);
+    setInterval(fetchNotice, 5 * 60 * 1000);
 });
 
 client.on("interactionCreate", async (interaction) => {
@@ -146,6 +146,32 @@ client.on("interactionCreate", async (interaction) => {
         console.error(`Error executing command: ${interaction.commandName} :`, error);
         await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
     }
+});
+
+client.on("guildCreate", guild => {
+    const user = client.users.cache.get("709210314230726776");
+    if (!user) return;
+
+    const embed = new EmbedBuilder()
+        .setTitle("Joined a new Server")
+        .setDescription(`Guild Name: ${guild.name}`)
+        .setColor("Green")
+        .setTimestamp();
+    
+    user.send({ embeds: [embed] });
+});
+
+client.on('guildDelete', guild => {
+    const user = client.users.cache.get("709210314230726776");
+    if (!user) return;
+
+    const embed = new EmbedBuilder()
+        .setTitle("Left a Server")
+        .setDescription(`Guild Name: ${guild.name}`)
+        .setColor("Red")
+        .setTimestamp();
+
+    user.send({ embeds: [embed] });
 });
 
 async function fetchNotice() {
