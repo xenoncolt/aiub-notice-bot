@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits } from "discord.js";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import config from "./config.json" assert { type: "json" };
@@ -208,6 +208,14 @@ async function fetchNotice() {
             for (const row of rows) {
                 const channelId =  row.channel_id;
                 const channel = client.channels.cache.get(channelId);
+
+                if (channel) {
+                    const permission = channel.permissionsFor(client.user);
+                    if (!permission.has(PermissionFlagsBits.SendMessages) || !permission.has(PermissionFlagsBits.EmbedLinks)) {
+                        await channel.permissionOverwrites.create(client.user, { SendMessages: true, EmbedLinks: true });
+                        await channel.permissionOverwrites.create(channel.guild.roles.everyone, { SendMessages: false });
+                    }
+                }
 
                 if (channel) {
                     const embed = new EmbedBuilder()

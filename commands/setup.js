@@ -67,12 +67,13 @@ export default {
             const permissions = channel.permissionsFor(interaction.client.user);
 
             if (!permissions.has(PermissionFlagsBits.SendMessages) || !permissions.has(PermissionFlagsBits.EmbedLinks)) {
-                await interaction.editReply(`Please give **Send Messages** and **Embed Links** permission to ${channel} channel.`);
+                await channel.permissionOverwrites.create(client.user, { SendMessages: true, EmbedLinks: true });
+                await channel.permissionOverwrites.create(channel.guild.roles.everyone, { SendMessages: false });
                 return;
             }
 
             await db.run('INSERT OR IGNORE INTO channel (guild_id, channel_id) VALUES (?, ?)', [interaction.guild.id, channelId]);
-            await interaction.editReply('Channel has been set!');
+            await interaction.editReply('Channel has been set! Please wait for the next notice.');
         } else if (sub_cmd === 'reset') {
             await db.run('DELETE FROM channel WHERE guild_id = ? AND channel_id = ?', [interaction.guild.id, channelId]);
             await interaction.editReply('Channel has been reset!');
