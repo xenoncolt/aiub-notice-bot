@@ -190,12 +190,22 @@ async function fetchNotice() {
 
         const link = `${config.url}${link_info}`;
 
+        lastNotice = title;
         // check last notice or not
-        if (title === lastNotice) {
+        // if (title === lastNotice) {
+        //     return;
+        // }
+        let notice_data = fs.readFileSync('./database/notice.json');
+        let last_notice = JSON.parse(notice_data);
+
+        if (title === last_notice.title) {
             return;
         }
 
-        lastNotice = title;
+        last_notice.title = title;
+        fs.writeFileSync('./database/notice.json', JSON.stringify(last_notice));
+        
+        
 
         // const channel = client.channels.cache.get(config.channel_id);
         for (const guild of client.guilds.cache.values()) {
