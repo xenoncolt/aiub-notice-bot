@@ -92,22 +92,22 @@ client.once("ready", async () => {
     try {
         console.log('Started refreshing application (/) commands.');
 
-            const cmds = Array.from(client.commands.values()).map(({ name, description, options }) => ({ name, description, options }));
+        const cmds = Array.from(client.commands.values()).map(({ name, description, options }) => ({ name, description, options }));
 
-            await rest.put(
-                Routes.applicationCommands(client.user.id),
-                {
-                    body: cmds
-                },
-            );
+        await rest.put(
+            Routes.applicationCommands(client.user.id),
+            {
+                body: cmds
+            },
+        );
 
-            await rest.put(
-                Routes.applicationGuildCommands(client.user.id, config.guild_id),
-                {
-                    body: cmds
-                },
-            );
-    
+        await rest.put(
+            Routes.applicationGuildCommands(client.user.id, config.guild_id),
+            {
+                body: cmds
+            },
+        );
+
         console.log('Successfully reloaded application (/) commands.');
     } catch (error) {
         console.error('Failed to reload application (/) commands.', error);
@@ -117,8 +117,8 @@ client.once("ready", async () => {
     let statusIndex = 0;
     setInterval(() => {
         const sts = [
-            {  name: `custom`, type: 4, state: `🪧Latest notice: ${lastNotice}` },
-            {  name: `with ${client.guilds.cache.size} servers`, type: 0 }
+            { name: `custom`, type: 4, state: `🪧Latest notice: ${lastNotice}` },
+            { name: `with ${client.guilds.cache.size} servers`, type: 0 }
         ];
         client.user.setPresence({
             activities: [sts[statusIndex]],
@@ -157,7 +157,7 @@ client.on("guildCreate", guild => {
         .setDescription(`Guild Name: ${guild.name}`)
         .setColor("Green")
         .setTimestamp();
-    
+
     user.send({ embeds: [embed] });
 });
 
@@ -181,78 +181,156 @@ async function fetchNotice() {
         const dom = new JSDOM(text);
         const document = dom.window.document;
 
-        const title = document.querySelector('.title').textContent;
-        const desc = document.querySelector('.desc').textContent;
-        const link_info = document.querySelector('.info-link').href;
-        const day = document.querySelector('time .day').textContent;
-        const month = document.querySelector('time .month').textContent;
-        const year = document.querySelector('time .year').textContent;
+        // const title = document.querySelector('.title').textContent;
+        // const desc = document.querySelector('.desc').textContent;
+        // const link_info = document.querySelector('.info-link').href;
+        // const day = document.querySelector('time .day').textContent;
+        // const month = document.querySelector('time .month').textContent;
+        // const year = document.querySelector('time .year').textContent;
 
-        const link = `${config.url}${link_info}`;
+        // const link = `${config.url}${link_info}`;
 
-        lastNotice = title;
+        // lastNotice = title;
         // check last notice or not
         // if (title === lastNotice) {
         //     return;
         // }
+        // let notice_data = fs.readFileSync('./database/notice.json');
+        // let last_notice = JSON.parse(notice_data);
+
+        // if (title === last_notice.title) {
+        //     return;
+        // }
+
+        // last_notice.title = title;
+        // fs.writeFileSync('./database/notice.json', JSON.stringify(last_notice));
+
+        const notices = document.querySelectorAll('.event-list li .info');
+        // const time_notices = document.querySelectorAll('.event-list li time')
         let notice_data = fs.readFileSync('./database/notice.json');
-        let last_notice = JSON.parse(notice_data);
+        let notice_object = JSON.parse(notice_data) || {};
 
-        if (title === last_notice.title) {
-            return;
+        let is_changed = false;
+
+        for (let i = 0; i < notices.length; i++) {
+            const notice = notices[i];
+            const title = notice.querySelector('.title').textContent;
+            const desc = notice.querySelector('.desc').textContent;
+            const link_info = notice.querySelector('.info-link').href;
+            const timeElement = notice.parentElement.querySelector('time');
+            const day = timeElement.querySelector('.day').textContent;
+            const month = timeElement.querySelector('.month').textContent;
+            const year = timeElement.querySelector('.year').textContent;
+
+
+            const link = `${config.url}${link_info}`;
+
+            if (notice_object[`title${i}`] !== title) {
+                notice_object[`title${i}`] = title;
+
+                is_changed = true;
+
+                lastNotice = title;
+
+                // const channel = client.channels.cache.get(config.channel_id);
+                for (const guild of client.guilds.cache.values()) {
+                    // Fetch channel ID from database instead of config file
+                    const rows = await db.all('SELECT channel_id FROM channel WHERE guild_id = ?', guild.id);
+
+                    console.log(title);
+
+                    if (rows.length > 0) {
+                        for (const row of rows) {
+                            const channelId = row.channel_id;
+                            const channel = client.channels.cache.get(channelId);
+
+                            if (channel) {
+                                const permission = channel.permissionsFor(client.user);
+                                if (!permission.has(PermissionFlagsBits.SendMessages) || !permission.has(PermissionFlagsBits.EmbedLinks)) {
+                                    await channel.permissionOverwrites.create(client.user, { SendMessages: true, EmbedLinks: true });
+                                    await channel.permissionOverwrites.create(channel.guild.roles.everyone, { SendMessages: false });
+                                }
+                            }
+
+                            if (channel) {
+                                const embed = new EmbedBuilder()
+                                    .setTitle(title)
+                                    .setDescription(desc)
+                                    .addFields(
+                                        { name: 'Published Date:', value: `${day} ${month} ${year}` }
+                                    )
+                                    .setURL(link)
+                                    .setColor("Green")
+                                    .setTimestamp();
+
+                                const link_btn = new ActionRowBuilder()
+                                    .addComponents(
+                                        new ButtonBuilder()
+                                            .setLabel('Details')
+                                            .setStyle(ButtonStyle.Link)
+                                            .setURL(link)
+                                    );
+
+                                await channel.send({ embeds: [embed], components: [link_btn] });
+                            }
+                        }
+                    } else {
+                        console.log('No channels found in the database for the guild')
+                    }
+                }
+            }
         }
-
-        last_notice.title = title;
-        fs.writeFileSync('./database/notice.json', JSON.stringify(last_notice));
-        
+        if (is_changed) {
+            fs.writeFileSync('./database/notice.json', JSON.stringify(notice_object));
+        }
         
 
         // const channel = client.channels.cache.get(config.channel_id);
-        for (const guild of client.guilds.cache.values()) {
+        // for (const guild of client.guilds.cache.values()) {
             // Fetch channel ID from database instead of config file
-        const rows = await db.all('SELECT channel_id FROM channel WHERE guild_id = ?', guild.id);
+        //     const rows = await db.all('SELECT channel_id FROM channel WHERE guild_id = ?', guild.id);
 
-        console.log(title);
+        //     console.log(title);
 
-        if (rows.length > 0) {
-            for (const row of rows) {
-                const channelId =  row.channel_id;
-                const channel = client.channels.cache.get(channelId);
+        //     if (rows.length > 0) {
+        //         for (const row of rows) {
+        //             const channelId = row.channel_id;
+        //             const channel = client.channels.cache.get(channelId);
 
-                if (channel) {
-                    const permission = channel.permissionsFor(client.user);
-                    if (!permission.has(PermissionFlagsBits.SendMessages) || !permission.has(PermissionFlagsBits.EmbedLinks)) {
-                        await channel.permissionOverwrites.create(client.user, { SendMessages: true, EmbedLinks: true });
-                        await channel.permissionOverwrites.create(channel.guild.roles.everyone, { SendMessages: false });
-                    }
-                }
+        //             if (channel) {
+        //                 const permission = channel.permissionsFor(client.user);
+        //                 if (!permission.has(PermissionFlagsBits.SendMessages) || !permission.has(PermissionFlagsBits.EmbedLinks)) {
+        //                     await channel.permissionOverwrites.create(client.user, { SendMessages: true, EmbedLinks: true });
+        //                     await channel.permissionOverwrites.create(channel.guild.roles.everyone, { SendMessages: false });
+        //                 }
+        //             }
 
-                if (channel) {
-                    const embed = new EmbedBuilder()
-                        .setTitle(title)
-                        .setDescription(desc)
-                        .addFields(
-                            { name: 'Published Date:', value: `${day} ${month} ${year}`}
-                        )
-                        .setURL(link)
-                        .setColor("Green")
-                        .setTimestamp();
+        //             if (channel) {
+        //                 const embed = new EmbedBuilder()
+        //                     .setTitle(title)
+        //                     .setDescription(desc)
+        //                     .addFields(
+        //                         { name: 'Published Date:', value: `${day} ${month} ${year}` }
+        //                     )
+        //                     .setURL(link)
+        //                     .setColor("Green")
+        //                     .setTimestamp();
 
-                    const link_btn = new ActionRowBuilder()
-                        .addComponents(
-                            new ButtonBuilder()
-                                .setLabel('Details')
-                                .setStyle(ButtonStyle.Link)
-                                .setURL(link)
-                        );
+        //                 const link_btn = new ActionRowBuilder()
+        //                     .addComponents(
+        //                         new ButtonBuilder()
+        //                             .setLabel('Details')
+        //                             .setStyle(ButtonStyle.Link)
+        //                             .setURL(link)
+        //                     );
 
-                    await channel.send( { embeds: [embed], components: [link_btn] } );
-                }
-            }
-        } else {
-            console.log('No channels found in the database for the guild')
-        }
-        }
+        //                 await channel.send({ embeds: [embed], components: [link_btn] });
+        //             }
+        //         }
+        //     } else {
+        //         console.log('No channels found in the database for the guild')
+        //     }
+        // }
     } catch (error) {
         console.error('Failed to catch notice: ', error);
     }
