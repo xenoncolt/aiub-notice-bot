@@ -208,9 +208,9 @@ async function fetchNotice() {
         const notices = document.querySelectorAll('.event-list li .info');
         // const time_notices = document.querySelectorAll('.event-list li time')
         let notice_data = fs.readFileSync('./database/notice.json');
-        let notice_object = JSON.parse(notice_data) || {};
+        let notice_object = JSON.parse(notice_data) || [];
 
-        let is_changed = false;
+        let new_notices = [];
 
         for (let i = 0; i < notices.length; i++) {
             const notice = notices[i];
@@ -225,10 +225,20 @@ async function fetchNotice() {
 
             const link = `${config.url}${link_info}`;
 
-            if (notice_object[`title${i}`] !== title) {
-                notice_object[`title${i}`] = title;
+            const existing_notice =  notice_object.find(n => n.title === title);
 
-                is_changed = true;
+            if (!existing_notice) {
+                
+                const new_notice = {
+                    title: title,
+                    desc: desc,
+                    link: link,
+                    day: day,
+                    month: month,
+                    year: year
+                };
+
+                new_notices.push(new_notice);
 
                 lastNotice = title;
 
@@ -275,14 +285,17 @@ async function fetchNotice() {
                             }
                         }
                     } else {
-                        console.log('No channels found in the database for the guild')
+                        console.log('No channels found in the database for the guild');
                     }
                 }
             }
         }
-        if (is_changed) {
-            fs.writeFileSync('./database/notice.json', JSON.stringify(notice_object));
-        }
+
+        notice_object = [...notice_object, ...new_notices];
+
+
+        fs.writeFileSync('./database/notice.json', JSON.stringify(notice_object));
+
         
 
         // const channel = client.channels.cache.get(config.channel_id);
