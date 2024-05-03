@@ -31,7 +31,7 @@ export default {
     description: 'Setup or reset a channel',
     options: [
         {
-            name: 'set',
+            name: 'notice',
             type: 1,
             description: 'Setup a channel',
             options: [{
@@ -62,7 +62,7 @@ export default {
         const sub_cmd = interaction.options.getSubcommand();
         const channelId = interaction.options.getChannel('channel').id;
 
-        if (sub_cmd === 'set') {
+        if (sub_cmd === 'notice') {
             const channel = interaction.options.getChannel('channel');
             const permissions = channel.permissionsFor(interaction.client.user);
 
@@ -73,7 +73,7 @@ export default {
             }
 
             await db.run('INSERT OR IGNORE INTO channel (guild_id, channel_id) VALUES (?, ?)', [interaction.guild.id, channelId]);
-            await interaction.editReply('Channel has been set! Please wait for the next notice.');
+            await interaction.editReply('Channel has been set! Please wait for the next notice.\nPlease vote us here [Vote](https://top.gg/bot/1123156043711651910?s=03e0096975e20)');
         } else if (sub_cmd === 'reset') {
             await db.run('DELETE FROM channel WHERE guild_id = ? AND channel_id = ?', [interaction.guild.id, channelId]);
             await interaction.editReply('Channel has been reset!');
