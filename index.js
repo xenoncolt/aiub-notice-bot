@@ -210,6 +210,8 @@ async function fetchNotice() {
         let notice_data = fs.readFileSync('./database/notice.json');
         let notice_object = JSON.parse(notice_data) || [];
 
+        lastNotice = notice_object[notice_object.length - 1];
+
         let new_notices = [];
 
         for (let i = 0; i < notices.length; i++) {
@@ -240,7 +242,6 @@ async function fetchNotice() {
 
                 new_notices.push(new_notice);
 
-                lastNotice = title;
 
                 // const channel = client.channels.cache.get(config.channel_id);
                 for (const guild of client.guilds.cache.values()) {
