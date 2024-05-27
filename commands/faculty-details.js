@@ -1,6 +1,9 @@
 import axios from "axios";
-import { EmbedBuilder } from "discord.js";
+import { EmbedBuilder, AttachmentBuilder } from "discord.js";
 import config from "../config.json" assert { type: "json" };
+import path from 'path';
+import { createWriteStream, mkdirSync } from 'fs';
+import { fileURLToPath } from 'url';
 
 export default {
     name: 'faculty-details',
@@ -27,7 +30,7 @@ export default {
             const profile = profile_list.find(profile => profile.CvPersonal.Email === email);
 
             if (profile) {
-                const embed = await getFacultyDetails(profile);
+                const embed = await getFacultyDetails(profile, client);
                 await interaction.reply( { embeds: [embed] } );
             } else {
                 await interaction.reply('Faculty or Teacher you are looking for is not found.\nPlease make sure your email is correct. Do not include any space.\nExample: \`/faculty-room this_part\`');
@@ -39,7 +42,7 @@ export default {
     }
 }
 
-async function getFacultyDetails(profile) {
+async function getFacultyDetails(profile, client) {
     // const response = await axios.get(config.faculty_url+email);
     // const dom = new JSDOM(response.data);
     // const document = dom.window.document;
@@ -56,11 +59,16 @@ async function getFacultyDetails(profile) {
     const room_no = profile.PersonalOtherInfo.RoomNo || 'N/A';
     const building = profile.PersonalOtherInfo.BuildingNo || 'N/A';
     const pic_url = config.url+profile.PersonalOtherInfo.SecondProfilePhoto;
-    const department = profile.HrDepartment;
-    const faculty = profile.Faculty;
-    const position = profile.Position;
-    const working_as = profile.Designation;
+    const department = profile.HrDepartment || 'N/A';
+    const faculty = profile.Faculty || 'N/A';
+    const position = profile.Position || 'N/A';
+    const working_as = profile.Designation || 'N/A';
 
+    const image_path = await downloadImage(pic_url);
+    const channel = client.channels.cache.get('1244675616306102402');
+    const attachment = new AttachmentBuilder(image_path);
+    const sent_message = await channel.send({ files: [attachment] });
+    const attachment_url = sent_message.attachments.first().url;
 
     const random_color = Math.floor(Math.random() * 16777215);
     try{
@@ -81,4 +89,28 @@ async function getFacultyDetails(profile) {
     } catch (e) {
         console.error(e);
     }
+}
+
+async function downloadImage(url) {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const dir = path.join(__dirname, '../download');
+    
+    mkdirSync(dir, { recursive: true });
+
+    const image_path = path.join(dir, 'temp.jpg');
+    const writer = createWriteStream(image_path);
+
+    const response = await axios({
+        url,
+        method: 'GET',
+        responseType: 'stream'
+    });
+
+    response.data.pipe(writer);
+
+    return new Promise((resolve, reject) => {
+        writer.on('finish', () => resolve(image_path));
+        writer.on('error', reject);
+    });
 }
