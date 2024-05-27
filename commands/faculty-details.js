@@ -1,5 +1,5 @@
 import axios from "axios";
-import { EmbedBuilder, AttachmentBuilder } from "discord.js";
+import { EmbedBuilder, AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import config from "../config.json" assert { type: "json" };
 import path from 'path';
 import { createWriteStream, mkdirSync } from 'fs';
@@ -31,7 +31,14 @@ export default {
 
             if (profile) {
                 const embed = await getFacultyDetails(profile, client);
-                await interaction.reply( { embeds: [embed] } );
+                const link_btn = new ActionRowBuilder()
+                    .addComponents(
+                         new ButtonBuilder()
+                            .setLabel('Details')
+                            .setStyle(ButtonStyle.Link)
+                            .setURL('https://www.aiub.edu/faculty-list/faculty-profile#'+email)
+                    );
+                await interaction.reply( { embeds: [embed], components: [link_btn] } );
             } else {
                 await interaction.reply('Faculty or Teacher you are looking for is not found.\nPlease make sure your email is correct. Do not include any space.\nExample: \`/faculty-room this_part\`');
             }
