@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits } from "discord.js";
+import { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits, TextChannel } from "discord.js";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import config from "./config.json" assert { type: "json" };
@@ -130,7 +130,7 @@ client.once("ready", async () => {
 
 
     // fetchNotice();
-    setInterval(fetchNotice, 5 * 60 * 1000);
+    setInterval(fetchNotice, 1 * 60 * 1000);
 });
 
 client.on("interactionCreate", async (interaction) => {
@@ -255,15 +255,44 @@ async function fetchNotice() {
                             const channelId = row.channel_id;
                             const channel = client.channels.cache.get(channelId);
 
-                            if (channel) {
+                            if (!(channel instanceof TextChannel)) {
+                                const sql = `DELETE FROM channel WHERE channel_id = ?`;
+                                    await db.run(sql, [channelId], function(err) {
+                                    if (err) {
+                                        return console.error(err.message);
+                                    }
+                                    console.log(`Row(s) deleted: ${this.changes}`);
+                                });
+                            }
+
+                            if (channel && channel instanceof Discord.TextChannel) {
                                 const permission = channel.permissionsFor(client.user);
+                                if (!permission.has(PermissionFlagsBits.ViewChannel) || !permission.has(PermissionFlagsBits.ManageChannels)) {
+                                    const sql = `DELETE FROM channel WHERE channel_id = ?`;
+                                    await db.run(sql, [channelId], function(err) {
+                                    if (err) {
+                                        return console.error(err.message);
+                                    }
+                                    console.log(`Row(s) deleted: ${this.changes}`);
+                                    });
+                                }
+                                
+
                                 if (!permission.has(PermissionFlagsBits.SendMessages) || !permission.has(PermissionFlagsBits.EmbedLinks)) {
                                     await channel.permissionOverwrites.create(client.user, { SendMessages: true, EmbedLinks: true });
                                     await channel.permissionOverwrites.create(channel.guild.roles.everyone, { SendMessages: false });
                                 }
+                            } else {
+                                const sql = `DELETE FROM channel WHERE channel_id = ?`;
+                                await db.run(sql, [channelId], function(err) {
+                                    if (err) {
+                                        return console.error(err.message);
+                                    }
+                                    console.log(`Row(s) deleted: ${this.changes}`);
+                                });
                             }
 
-                            if (channel) {
+                            if (channel && channel instanceof Discord.TextChannel) {
                                 const embed = new EmbedBuilder()
                                     .setTitle(title)
                                     .setDescription(desc)

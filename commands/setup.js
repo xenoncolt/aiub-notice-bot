@@ -1,6 +1,6 @@
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
-import { PermissionFlagsBits } from "discord.js";
+import { PermissionFlagsBits, TextChannel } from "discord.js";
 
 // Database thing
 let db;
@@ -65,6 +65,16 @@ export default {
         if (sub_cmd === 'notice') {
             const channel = interaction.options.getChannel('channel');
             const permissions = channel.permissionsFor(interaction.client.user);
+
+            if (!(channel instanceof TextChannel)) {
+                await interaction.editReply('Channel is not a Text Channel. Please select a text channel.');
+                return;
+            }
+
+            if (!permissions.has(PermissionFlagsBits.ViewChannel) || !permissions.has(PermissionFlagsBits.ManageChannels)) {
+                await interaction.editReply('I don\'t have permission to view or manage this channel.');
+                return;
+            }
 
             if (!permissions.has(PermissionFlagsBits.SendMessages) || !permissions.has(PermissionFlagsBits.EmbedLinks)) {
                 await channel.permissionOverwrites.create(client.user, { SendMessages: true, EmbedLinks: true });
