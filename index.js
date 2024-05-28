@@ -265,7 +265,7 @@ async function fetchNotice() {
                                 });
                             }
 
-                            if (channel && channel instanceof Discord.TextChannel) {
+                            if (channel && channel instanceof TextChannel) {
                                 const permission = channel.permissionsFor(client.user);
                                 if (!permission.has(PermissionFlagsBits.ViewChannel) || !permission.has(PermissionFlagsBits.ManageChannels)) {
                                     const sql = `DELETE FROM channel WHERE channel_id = ?`;
@@ -292,7 +292,7 @@ async function fetchNotice() {
                                 });
                             }
 
-                            if (channel && channel instanceof Discord.TextChannel) {
+                            if (channel && channel instanceof TextChannel) {
                                 const embed = new EmbedBuilder()
                                     .setTitle(title)
                                     .setDescription(desc)
