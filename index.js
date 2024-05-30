@@ -32,12 +32,9 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
         GatewayIntentBits.DirectMessages,
         GatewayIntentBits.DirectMessageReactions,
-        GatewayIntentBits.DirectMessageTyping,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildPresences
+        GatewayIntentBits.DirectMessageTyping
     ]
 });
 
@@ -130,7 +127,7 @@ client.once("ready", async () => {
 
 
     // fetchNotice();
-    setInterval(fetchNotice, 1 * 60 * 1000);
+    setInterval(fetchNotice, 5 * 60 * 1000);
 });
 
 client.on("interactionCreate", async (interaction) => {
