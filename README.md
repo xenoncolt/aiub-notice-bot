@@ -11,7 +11,7 @@ AUIB Notice Bot is a Discord bot that sends the latest notice from the [AUIB Web
 - [ ] News & Events
 - [x] Show new notice on status
 - [ ] Academic Calender
-- [ ] Faculty list : Room Number, Biography
+- [x] Faculty list : Room Number, Biography
 
 # Installation
 - Clone the repository
