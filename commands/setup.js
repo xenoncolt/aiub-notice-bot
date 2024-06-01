@@ -83,10 +83,10 @@ export default {
             }
 
             await db.run('INSERT OR IGNORE INTO channel (guild_id, channel_id) VALUES (?, ?)', [interaction.guild.id, channelId]);
-            await interaction.editReply('Channel has been set! Please wait for the next notice.\nPlease vote us here [Vote](https://top.gg/bot/1123156043711651910?s=03e0096975e20)');
+            await interaction.editReply('Channel has been set! <:Nice:791390203944239134> Please wait for the next notice.\nPlease review me here. <:crying_praying:791390109839654922> \n[Review](https://top.gg/bot/1123156043711651910#reviews)');
         } else if (sub_cmd === 'reset') {
             await db.run('DELETE FROM channel WHERE guild_id = ? AND channel_id = ?', [interaction.guild.id, channelId]);
-            await interaction.editReply('Channel has been reset!');
+            await interaction.editReply('Channel has been reset! <:ThumbsUP:806052736089063434>\nYou can add again by using \`/setup notice\`');
         }
     } catch (error) {
         console.error('Something went wrong: ', error);
