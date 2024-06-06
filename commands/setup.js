@@ -62,9 +62,16 @@ export default {
         const sub_cmd = interaction.options.getSubcommand();
         const channelId = interaction.options.getChannel('channel').id;
 
+        const channel = interaction.options.getChannel('channel');
+        const permissions = channel.permissionsFor(interaction.client.user);
+        const usr = interaction.member;
+
         if (sub_cmd === 'notice') {
-            const channel = interaction.options.getChannel('channel');
-            const permissions = channel.permissionsFor(interaction.client.user);
+
+            if (!usr.permissions.has(PermissionFlagsBits.Administrator) || !usr.permissions.has(PermissionFlagsBits.ManageChannels)) {
+                await interaction.editReply("You don\'t have enough permission to setup notice channel.");
+                return;
+            }
 
             if (!(channel instanceof TextChannel)) {
                 await interaction.editReply('Channel is not a Text Channel. Please select a text channel.');
@@ -85,6 +92,12 @@ export default {
             await db.run('INSERT OR IGNORE INTO channel (guild_id, channel_id) VALUES (?, ?)', [interaction.guild.id, channelId]);
             await interaction.editReply('Channel has been set! <:Nice:791390203944239134> Please wait for the next notice.\nPlease review me here. <:crying_praying:791390109839654922> \n[Review](https://top.gg/bot/1123156043711651910#reviews)');
         } else if (sub_cmd === 'reset') {
+
+            if (!usr.permissions.has(PermissionFlagsBits.Administrator) || !usr.permissions.has(PermissionFlagsBits.ManageChannels)) {
+                await interaction.editReply("You don\'t have enough permission to setup notice channel.");
+                return;
+            }
+            
             await db.run('DELETE FROM channel WHERE guild_id = ? AND channel_id = ?', [interaction.guild.id, channelId]);
             await interaction.editReply('Channel has been reset! <:ThumbsUP:806052736089063434>\nYou can add again by using \`/setup notice\`');
         }
