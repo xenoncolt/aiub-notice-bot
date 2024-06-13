@@ -8,14 +8,14 @@ import fetch from "node-fetch";
 // const { JSDOM } = jsdom;
 import { JSDOM } from "jsdom";
 import fs from "fs";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+//import { fileURLToPath } from "url";
+//import { dirname, join } from "path";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 // const dotenv = require("dotenv");
 import dotenv from "dotenv";
-import { assert } from "console";
-import { type } from "os";
+//import { assert } from "console";
+//import { type } from "os";
 dotenv.config();
 
 // Database thing
