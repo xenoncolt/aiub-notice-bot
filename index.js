@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits, TextChannel } from "discord.js";
+import { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits, TextChannel, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import config from "./config.json" assert { type: "json" };
@@ -127,21 +127,34 @@ client.once("ready", async () => {
 
 
     // fetchNotice();
-    setInterval(fetchNotice, 5 * 60 * 1000);
+    setInterval(fetchNotice, 1 * 60 * 1000);
 });
 
 client.on("interactionCreate", async (interaction) => {
-    if (!interaction.isCommand()) return;
+    if (!interaction.isCommand() && !interaction.isSelectMenu()) return;
 
-    const command = client.commands.get(interaction.commandName);
+    if (interaction.isCommand()) {
+        const command = client.commands.get(interaction.commandName);
 
-    if (!command) return;
+        if (!command) return;
 
-    try {
-        await command.execute(interaction, client);
-    } catch (error) {
-        console.error(`Error executing command: ${interaction.commandName} :`, error);
-        await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+        try {
+            await command.execute(interaction, client);
+        } catch (error) {
+            console.error(`Error executing command: ${interaction.commandName} :`, error);
+            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+        }
+    } else if (interaction.isSelectMenu()) {
+        if (interaction.customId === 'select-pdf') {
+            const pdf_url = interaction.values[0];
+            try {
+                await interaction.user.send(`Here is the PDF you selected:\n${pdf_url}`);
+                await interaction.reply({ content: 'The PDF link has been sent to your DMs.', ephemeral: true });
+            } catch (error) {
+                console.error('Failed to send PDF link to user:', error);
+                await interaction.reply({ content: 'Failed to send the PDF link to your DMs. Please make sure you `ADD APP` as `User` and try again.', ephemeral: true });
+            }
+        }
     }
 });
 
@@ -227,6 +240,20 @@ async function fetchNotice() {
             const existing_notice =  notice_object.find(n => n.title === title);
 
             if (!existing_notice) {
+                const notice_response = await fetch(link);
+                const notice_text = await notice_response.text();
+                const notice_dom = new JSDOM(notice_text);
+                const notice_doc = notice_dom.window.document;
+                const pdf_links = notice_doc.querySelectorAll('a[href$=".pdf"]');
+
+                let pdf_options = [];
+                if (pdf_links.length > 0) {
+                    pdf_options = Array.from(pdf_links).map((pdf, index) => ({
+                        label: `PDF ${index + 1}`,
+                        description: pdf.textContent.trim(),
+                        value: `${config.url}${pdf.getAttribute('href')}`
+                    }));
+                }
                 
                 const new_notice = {
                     title: title,
@@ -234,7 +261,8 @@ async function fetchNotice() {
                     link: link,
                     day: day,
                     month: month,
-                    year: year
+                    year: year,
+                    pdf_options: pdf_options
                 };
 
                 new_notices.push(new_notice);
@@ -299,7 +327,7 @@ async function fetchNotice() {
                                     .setURL(link)
                                     .setColor("Green")
                                     .setTimestamp();
-
+                                
                                 const link_btn = new ActionRowBuilder()
                                     .addComponents(
                                         new ButtonBuilder()
@@ -308,7 +336,23 @@ async function fetchNotice() {
                                             .setURL(link)
                                     );
 
-                                await channel.send({ embeds: [embed], components: [link_btn] });
+
+                                if (pdf_options.length > 0) {
+                                    const select_menu = new StringSelectMenuBuilder()
+                                        .setCustomId('select-pdf')
+                                        .setPlaceholder('Select a PDF to send to your DM')
+                                        .addOptions(
+                                            pdf_options.map(option => new StringSelectMenuOptionBuilder(option))
+                                        );
+                                    
+                                    const menu = new ActionRowBuilder()
+                                        .addComponents(select_menu);
+
+                                    await channel.send({ embeds: [embed], components: [link_btn, menu] });
+                                } else {
+                                    await channel.send({ embeds: [embed], components: [link_btn] });
+                                }
+
                             }
                         }
                     } else {
