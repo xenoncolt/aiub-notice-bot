@@ -249,9 +249,9 @@ async function fetchNotice() {
                 let pdf_options = [];
                 if (pdf_links.length > 0) {
                     pdf_options = Array.from(pdf_links).map((pdf, index) => ({
-                        label: `PDF ${index + 1}`,
-                        description: pdf.textContent.trim(),
-                        value: `${config.url}${pdf.getAttribute('href')}`
+                        label: `PDF ${index + 1}`.slice(0, 100),
+                        description: pdf.textContent.trim().slice(0, 100),
+                        value: `${config.url}${pdf.getAttribute('href')}`.slice(0, 100)
                     }));
                 }
                 
