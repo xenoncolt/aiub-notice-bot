@@ -81,8 +81,6 @@ for (const file of cmdFiles) {
 // store last notice
 let lastNotice = null;
 
-// store full pdf url
-const full_pdf_url_map = new Map();
 
 // start bot
 client.once("ready", async () => {
@@ -149,10 +147,9 @@ client.on("interactionCreate", async (interaction) => {
         }
     } else if (interaction.isSelectMenu()) {
         if (interaction.customId === 'select-pdf') {
+            const pdf_url = interaction.values[0];
             try {
-                const truncated_url = interaction.values[0];
-                const full_pdf_url = full_pdf_url_map.get(truncated_url);
-                await interaction.user.send(`Here is the PDF you selected:\n${full_pdf_url}`);
+                await interaction.user.send(`Here is the PDF you selected:\n${config.url}${pdf_url}`);
                 await interaction.reply({ content: 'The PDF link has been sent to your DMs.', ephemeral: true });
             } catch (error) {
                 console.error('Failed to send PDF link to user:', error);
@@ -252,17 +249,11 @@ async function fetchNotice() {
 
                 let pdf_options = [];
                 if (pdf_links.length > 0) {
-                    pdf_options = Array.from(pdf_links).map((pdf, index) => {
-                        const full_pdf_url = `${config.url}${pdf.getAttribute('href')}`;
-                        const truncated_url = full_pdf_url.slice(0, 100);
-                        full_pdf_url_map.set(truncated_url, full_pdf_url);
-                        return {
-                            label: `PDF ${index + 1}`.slice(0, 100),
-                            description: pdf.textContent.trim().slice(0, 100),
-                            // value: `${config.url}${pdf.getAttribute('href')}`
-                            value: truncated_url
-                        };
-                    });
+                    pdf_options = Array.from(pdf_links).map((pdf, index) => ({
+                        label: `PDF ${index + 1}`.slice(0, 100),
+                        description: pdf.textContent.trim().slice(0, 100),
+                        value: `${pdf.getAttribute('href')}`.slice(0, 100)
+                    }));
                 }
                 
                 const new_notice = {
