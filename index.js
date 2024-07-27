@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits, TextChannel, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
+import { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits, TextChannel, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, AttachmentBuilder } from "discord.js";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import config from "./config.json" assert { type: "json" };
@@ -14,6 +14,9 @@ import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 // const dotenv = require("dotenv");
 import dotenv from "dotenv";
+import path, { format } from "path";
+import poppler from 'pdf-poppler'; // have to install (Linux)[sudo apt-get install poppler-utils] (macOS)[brew install poppler]
+import { fileURLToPath } from "url";
 //import { assert } from "console";
 //import { type } from "os";
 dotenv.config();
@@ -26,6 +29,10 @@ open({
 }).then((database) => {
     db = database;
 })
+
+// For ES6 module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 
 const client = new Client({
@@ -128,7 +135,7 @@ client.once("ready", async () => {
 
 
     // fetchNotice();
-    setInterval(fetchNotice, 0.1 * 60 * 1000);
+    setInterval(fetchNotice, 1 * 60 * 1000);
 });
 
 client.on("interactionCreate", async (interaction) => {
@@ -149,7 +156,19 @@ client.on("interactionCreate", async (interaction) => {
         if (interaction.customId === 'select-pdf') {
             const pdf_url = interaction.values[0];
             try {
-                await interaction.user.send(`Here is the PDF you selected:\n${config.url}${pdf_url}`);
+                // await interaction.user.send(`Here is the PDF you selected:\n${config.url}${pdf_url}`);
+
+                const pdf_path = await downloadPDF(`${config.url}${pdf_url}`);
+                const images = await convertPDFToImages(pdf_path);
+
+                for (const image_path of images) {
+                    const attachment = new AttachmentBuilder(image_path);
+                    await interaction.user.send({ files: [attachment] });
+                    fs.unlinkSync(image_path);
+                }
+
+                fs.unlinkSync(pdf_path);
+
                 await interaction.reply({ content: 'The PDF link has been sent to your DMs.', ephemeral: true });
             } catch (error) {
                 console.error('Failed to send PDF link to user:', error);
@@ -418,6 +437,35 @@ async function fetchNotice() {
         // }
     } catch (error) {
         console.error('Failed to catch notice: ', error);
+    }
+}
+
+async function downloadPDF(url) {
+    const response = await fetch(url);
+    const buffer = await response.buffer();
+    const pdf_path = path.join(__dirname, 'download', path.basename(url));
+    fs.writeFileSync(pdf_path, buffer);
+    return pdf_path;
+}
+
+async function convertPDFToImages(pdf_path) {
+    const options = {
+        format: 'png',
+        out_dir: path.dirname(pdf_path),
+        out_prefix: path.basename(pdf_path, path.extname(pdf_path)),
+        page: null
+    };
+
+    try {
+        await poppler.convert(pdf_path, options);
+        const image_paths = fs.readdirSync(path.dirname(pdf_path))
+            .filter(file => file.startsWith(options.out_prefix) && file.endsWith('.png'))
+            .map(file => path.join(path.dirname(pdf_path), file));
+        
+        return image_paths;
+    } catch (error) {
+        console.error('Error converting pdf to images:', error);
+        throw error;
     }
 }
 
