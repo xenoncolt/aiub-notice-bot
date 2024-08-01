@@ -14,9 +14,9 @@ import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 // const dotenv = require("dotenv");
 import dotenv from "dotenv";
-import path, { format } from "path";
-import poppler from 'pdf-poppler'; // have to install (Linux)[sudo apt-get install poppler-utils] (macOS)[brew install poppler]
+import path from "path";
 import { fileURLToPath } from "url";
+import { pdfToPng } from "pdf-to-png-converter";
 //import { assert } from "console";
 //import { type } from "os";
 dotenv.config();
@@ -135,7 +135,7 @@ client.once("ready", async () => {
 
 
     // fetchNotice();
-    setInterval(fetchNotice, 1 * 60 * 1000);
+    setInterval(fetchNotice, 5 * 60 * 1000);
 });
 
 client.on("interactionCreate", async (interaction) => {
@@ -157,6 +157,7 @@ client.on("interactionCreate", async (interaction) => {
             const pdf_url = interaction.values[0];
             try {
                 // await interaction.user.send(`Here is the PDF you selected:\n${config.url}${pdf_url}`);
+                await interaction.deferReply({ ephemeral: true }); 
 
                 const pdf_path = await downloadPDF(`${config.url}${pdf_url}`);
                 const images = await convertPDFToImages(pdf_path);
@@ -442,6 +443,9 @@ async function fetchNotice() {
 
 async function downloadPDF(url) {
     const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch PDF: ${response.statusText}`);
+    }
     const buffer = await response.buffer();
     const pdf_path = path.join(__dirname, 'download', path.basename(url));
     fs.writeFileSync(pdf_path, buffer);
@@ -449,24 +453,69 @@ async function downloadPDF(url) {
 }
 
 async function convertPDFToImages(pdf_path) {
-    const options = {
-        format: 'png',
-        out_dir: path.dirname(pdf_path),
-        out_prefix: path.basename(pdf_path, path.extname(pdf_path)),
-        page: null
-    };
+    // const output_dir = path.dirname(pdf_path);
+    // const output_prefix = path.basename(pdf_path, path.extname(pdf_path));
+    // const pdf_buffer = fs.readFileSync(pdf_path);
+
+    // const loading_task =  pdfjsDist.getDocument({ data: pdf_buffer });
+    // const pdf = await loading_task.promise;
+
+    // const images = [];
+
+    // for (let page_num = 1; page_num <= pdf.numPages; page_num++) {
+    //     const page = await pdf.getPage(page_num);
+    //     const view_port = page.getViewport({ scale: 1.5 });
+
+    //     const canvas = createCanvas(view_port.width, view_port.height);
+    //     const context = canvas.getContext('2d');
+
+    //     const renderContext = {
+    //         canvasContext: context,
+    //         viewport: view_port,
+    //     };
+
+    //     await page.render(renderContext).promise;
+
+    //     const image_path = path.join(output_dir, `${output_prefix}-${page_num}.png`);
+    //     const out = fs.createWriteStream(image_path);
+    //     const stream = canvas.createPNGStream();
+    //     stream.pipe(out);
+    //     images.push(image_path);
+
+    //     await new Promise((resolve, reject) => {
+    //         out.on('finish', resolve);
+    //         out.on('error', reject);
+    //     });
+    // }
+
+    // return images;
+
 
     try {
-        await poppler.convert(pdf_path, options);
-        const image_paths = fs.readdirSync(path.dirname(pdf_path))
-            .filter(file => file.startsWith(options.out_prefix) && file.endsWith('.png'))
-            .map(file => path.join(path.dirname(pdf_path), file));
-        
+        const output_dir = path.dirname(pdf_path);
+        const pdf_buffer = fs.readFileSync(pdf_path);
+
+        const images = await pdfToPng(pdf_buffer, {
+            disableFontFace: true,
+            useSystemFonts: true,
+            pages: '1-',
+            viewportScale: 2.0
+        });
+
+        const image_paths = [];
+
+        for (const [index, image] of images.entries()) {
+            const image_path = path.join(output_dir, `page-${index + 1}.png`);
+            fs.writeFileSync(image_path, image.content);
+            image_paths.push(image_path);
+        }
+
         return image_paths;
     } catch (error) {
-        console.error('Error converting pdf to images:', error);
-        throw error;
+      console.error('Failed to convert PDF to images:', error);  
+      throw error;
     }
+    
 }
 
 client.login(process.env.TOKEN);
