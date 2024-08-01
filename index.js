@@ -170,10 +170,10 @@ client.on("interactionCreate", async (interaction) => {
 
                 fs.unlinkSync(pdf_path);
 
-                await interaction.reply({ content: 'The PDF link has been sent to your DMs.', ephemeral: true });
+                await interaction.editReply({ content: 'The PDF link has been sent to your DMs.', ephemeral: true });
             } catch (error) {
                 console.error('Failed to send PDF link to user:', error);
-                await interaction.reply({ content: 'Failed to send the PDF link to your DMs. Please make sure you `ADD APP` as `User` and try again.', ephemeral: true });
+                await interaction.editReply({ content: 'Failed to send the PDF link to your DMs. Please make sure you `ADD APP` as `User` and try again.', ephemeral: true });
             }
         }
     }
