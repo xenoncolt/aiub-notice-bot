@@ -2,23 +2,15 @@ import { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilde
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import config from "./config.json" assert { type: "json" };
-// const fetch = require("node-fetch");
 import fetch from "node-fetch";
-// const jsdom = require("jsdom");
-// const { JSDOM } = jsdom;
 import { JSDOM } from "jsdom";
 import fs from "fs";
-//import { fileURLToPath } from "url";
-//import { dirname, join } from "path";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
-// const dotenv = require("dotenv");
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 import { pdfToPng } from "pdf-to-png-converter";
-//import { assert } from "console";
-//import { type } from "os";
 dotenv.config();
 
 // Database thing
@@ -52,10 +44,6 @@ const rest = new REST({ version: '9' }).setToken(process.env.TOKEN);
 //load cmd
 client.commands = new Map();
 
-// without array
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = dirname(__filename);
-// const cmdFiles = fs.readdirSync(join(__dirname, "commands")).filter(file => file.endsWith('.js'));
 
 // Used array to store commands
 const cmdFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -67,23 +55,7 @@ for (const file of cmdFiles) {
 }
 
 
-// Register Globally commands
-// (async () => {
-//     try {
-//         console.log('Started refreshing application (/) commands.');
 
-//         await rest.put(
-//             Routes.applicationCommands(client.user.id),
-//             {
-//                 body: client.commands.map(({data}) => data)
-//             },
-//         );
-
-//         console.log('Successfully reloaded application (/) commands.');
-//     } catch (error) {
-//         console.error('Failed to reload application (/) commands.', error);
-//     }
-// })();
 
 // store last notice
 let lastNotice = null;
@@ -211,30 +183,6 @@ async function fetchNotice() {
         const text = await response.text();
         const dom = new JSDOM(text);
         const document = dom.window.document;
-
-        // const title = document.querySelector('.title').textContent;
-        // const desc = document.querySelector('.desc').textContent;
-        // const link_info = document.querySelector('.info-link').href;
-        // const day = document.querySelector('time .day').textContent;
-        // const month = document.querySelector('time .month').textContent;
-        // const year = document.querySelector('time .year').textContent;
-
-        // const link = `${config.url}${link_info}`;
-
-        // lastNotice = title;
-        // check last notice or not
-        // if (title === lastNotice) {
-        //     return;
-        // }
-        // let notice_data = fs.readFileSync('./database/notice.json');
-        // let last_notice = JSON.parse(notice_data);
-
-        // if (title === last_notice.title) {
-        //     return;
-        // }
-
-        // last_notice.title = title;
-        // fs.writeFileSync('./database/notice.json', JSON.stringify(last_notice));
 
         const notices = document.querySelectorAll('.event-list li .info');
         // const time_notices = document.querySelectorAll('.event-list li time')
@@ -387,55 +335,6 @@ async function fetchNotice() {
 
 
         fs.writeFileSync('./database/notice.json', JSON.stringify(notice_object));
-
-        
-
-        // const channel = client.channels.cache.get(config.channel_id);
-        // for (const guild of client.guilds.cache.values()) {
-            // Fetch channel ID from database instead of config file
-        //     const rows = await db.all('SELECT channel_id FROM channel WHERE guild_id = ?', guild.id);
-
-        //     console.log(title);
-
-        //     if (rows.length > 0) {
-        //         for (const row of rows) {
-        //             const channelId = row.channel_id;
-        //             const channel = client.channels.cache.get(channelId);
-
-        //             if (channel) {
-        //                 const permission = channel.permissionsFor(client.user);
-        //                 if (!permission.has(PermissionFlagsBits.SendMessages) || !permission.has(PermissionFlagsBits.EmbedLinks)) {
-        //                     await channel.permissionOverwrites.create(client.user, { SendMessages: true, EmbedLinks: true });
-        //                     await channel.permissionOverwrites.create(channel.guild.roles.everyone, { SendMessages: false });
-        //                 }
-        //             }
-
-        //             if (channel) {
-        //                 const embed = new EmbedBuilder()
-        //                     .setTitle(title)
-        //                     .setDescription(desc)
-        //                     .addFields(
-        //                         { name: 'Published Date:', value: `${day} ${month} ${year}` }
-        //                     )
-        //                     .setURL(link)
-        //                     .setColor("Green")
-        //                     .setTimestamp();
-
-        //                 const link_btn = new ActionRowBuilder()
-        //                     .addComponents(
-        //                         new ButtonBuilder()
-        //                             .setLabel('Details')
-        //                             .setStyle(ButtonStyle.Link)
-        //                             .setURL(link)
-        //                     );
-
-        //                 await channel.send({ embeds: [embed], components: [link_btn] });
-        //             }
-        //         }
-        //     } else {
-        //         console.log('No channels found in the database for the guild')
-        //     }
-        // }
     } catch (error) {
         console.error('Failed to catch notice: ', error);
     }
@@ -453,44 +352,6 @@ async function downloadPDF(url) {
 }
 
 async function convertPDFToImages(pdf_path) {
-    // const output_dir = path.dirname(pdf_path);
-    // const output_prefix = path.basename(pdf_path, path.extname(pdf_path));
-    // const pdf_buffer = fs.readFileSync(pdf_path);
-
-    // const loading_task =  pdfjsDist.getDocument({ data: pdf_buffer });
-    // const pdf = await loading_task.promise;
-
-    // const images = [];
-
-    // for (let page_num = 1; page_num <= pdf.numPages; page_num++) {
-    //     const page = await pdf.getPage(page_num);
-    //     const view_port = page.getViewport({ scale: 1.5 });
-
-    //     const canvas = createCanvas(view_port.width, view_port.height);
-    //     const context = canvas.getContext('2d');
-
-    //     const renderContext = {
-    //         canvasContext: context,
-    //         viewport: view_port,
-    //     };
-
-    //     await page.render(renderContext).promise;
-
-    //     const image_path = path.join(output_dir, `${output_prefix}-${page_num}.png`);
-    //     const out = fs.createWriteStream(image_path);
-    //     const stream = canvas.createPNGStream();
-    //     stream.pipe(out);
-    //     images.push(image_path);
-
-    //     await new Promise((resolve, reject) => {
-    //         out.on('finish', resolve);
-    //         out.on('error', reject);
-    //     });
-    // }
-
-    // return images;
-
-
     try {
         const output_dir = path.dirname(pdf_path);
         const pdf_buffer = fs.readFileSync(pdf_path);

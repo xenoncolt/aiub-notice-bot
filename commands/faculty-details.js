@@ -50,18 +50,6 @@ export default {
 }
 
 async function getFacultyDetails(profile, client) {
-    // const response = await axios.get(config.faculty_url+email);
-    // const dom = new JSDOM(response.data);
-    // const document = dom.window.document;
-
-    // const full_name = document.querySelector('.faculty-title').textContent.trim();
-    // const room_no = document.querySelector("[x-text='profileData.PersonalOtherInfo.RoomNo']").textContent.trim();
-    // const building = document.querySelector("[x-text='profileData.PersonalOtherInfo.BuildingNo']").textContent.trim();
-    // const pic_url = document.querySelector('.pro-pic').src;
-    // const department = document.querySelector("[x-text='profileData.HrDepartment']").textContent.trim();
-    // const faculty = document.querySelector("[x-text='profileData.Faculty']").textContent.trim();
-    // const position = document.querySelector("[x-text='profileData.Position']").textContent.trim();
-
     const full_name = profile.CvPersonal.Name;
     const room_no = profile.PersonalOtherInfo.RoomNo || 'N/A';
     const building = profile.PersonalOtherInfo.BuildingNo || 'N/A';
