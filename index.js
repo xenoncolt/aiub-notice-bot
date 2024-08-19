@@ -166,7 +166,30 @@ client.on("guildCreate", guild => {
 
     const embed = new EmbedBuilder()
         .setTitle("Joined a new Server")
-        .setDescription(`Guild Name: ${guild.name}`)
+        .setDescription(`Guild Name: **${guild.name}**`)
+        .addFields(
+            {
+                name: "Guild Description",
+                value: `${guild.description}`,
+                inline: false
+            },
+            {
+                name: "Guild Owner",
+                value: `<@${guild.ownerId}>`,
+                inline: true
+            },
+            {
+                name: "Guild Total Member",
+                value: `${guild.memberCount}`,
+                inline: true
+            },
+            {
+                name: "Guild Created",
+                value: `<t:${Math.floor(guild.createdAt.getTime() / 1000)}:R>}`
+            }
+        )
+        .setThumbnail(guild.iconURL())
+        .setImage(guild.bannerURL())
         .setColor("Green")
         .setTimestamp();
 
@@ -179,7 +202,30 @@ client.on('guildDelete', guild => {
 
     const embed = new EmbedBuilder()
         .setTitle("Left a Server")
-        .setDescription(`Guild Name: ${guild.name}`)
+        .setDescription(`Guild Name: **${guild.name}**`)
+        .addFields(
+            {
+                name: "Guild Description",
+                value: `${guild.description}`,
+                inline: false
+            },
+            {
+                name: "Guild Owner",
+                value: `<@${guild.ownerId}>`,
+                inline: true
+            },
+            {
+                name: "Guild Total Member",
+                value: `${guild.memberCount}`,
+                inline: true
+            },
+            {
+                name: "Guild Created",
+                value: `<t:${Math.floor(guild.createdAt.getTime() / 1000)}:R>`
+            }
+        )
+        .setThumbnail(guild.iconURL())
+        .setImage(guild.bannerURL())
         .setColor("Red")
         .setTimestamp();
 
