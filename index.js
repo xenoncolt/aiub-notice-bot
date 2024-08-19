@@ -13,13 +13,22 @@ import { fileURLToPath } from "url";
 import { pdfToPng } from "pdf-to-png-converter";
 dotenv.config();
 
-// Database thing
+// Database thing for notice channel
 let db;
 open({
     filename: './database/channel.sqlite',
     driver: sqlite3.Database
 }).then((database) => {
     db = database;
+})
+
+// Database for all other data
+let data_db;
+open({
+    filename: './database/data.sqlite',
+    driver: sqlite3.Database
+}).then((database) => {
+    data_db = database;
 })
 
 // For ES6 module
@@ -327,6 +336,67 @@ async function fetchNotice() {
                     } else {
                         console.log('No channels found in the database for the guild');
                     }
+                }
+
+                // Send to all users that have subscribed
+                const user_rows = await data_db.all('SELECT notice FROM dm WHERE notice IS NOT NULL');
+                if (user_rows.length > 0) {
+                    for (const user_row of user_rows) {
+                        const user_id = user_row.notice;
+                        const user = await client.users.fetch(user_id).catch(console.error);
+
+                        // If the user can't found, remove from the database
+                        if (!user) {
+                            const sql = `UPDATE dm SET notice = NULL WHERE notice = ?`;
+                            await data_db.run(sql, [user_id], function(err) {
+                                if (err) {
+                                    return console.error(err.message);
+                                }
+                                console.log(`User ${user_id} unsubscribed from notice notifications.`);
+                            });
+                            continue;
+                        }
+
+                        const dm_channel = await user.createDM();
+
+                        const embed = new EmbedBuilder()
+                            .setTitle(title)
+                            .setDescription(desc)
+                            .addFields(
+                                {
+                                    name: `Published Date:`,
+                                    value: `${day} ${month} ${year}`
+                                }
+                            )
+                            .setURL(link)
+                            .setColor("Green")
+                            .setTimestamp();
+
+                        const link_btn = new ActionRowBuilder()
+                            .addComponents(
+                                new ButtonBuilder()
+                                    .setLabel('Details')
+                                    .setStyle(ButtonStyle.Link)
+                                    .setURL(link)
+                            );
+
+                        
+                        if (pdf_options.length > 0) {
+                            const select_menu = new StringSelectMenuBuilder()
+                                .setCustomId('select-pdf')
+                                .setPlaceholder('Select a PDF to get as Image')
+                                .addOptions(
+                                    pdf_options.map(option => new StringSelectMenuOptionBuilder(option))
+                                );
+
+                            const menu = new ActionRowBuilder().addComponents(select_menu);
+                            await dm_channel.send({ embeds: [embed], components: [link_btn, menu]});
+                        } else {
+                            await dm_channel.send({ embeds: [embed], components: [link_btn] });
+                        }
+                    }
+                } else {
+                    console.log('No users found in the database who subscribe for notices')
                 }
             }
         }
