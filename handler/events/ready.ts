@@ -1,7 +1,10 @@
 import { Client, Events } from "discord.js";
+import { readFileSync } from "fs";
+import { fetchNotice } from "../../utils/noticeFetch.js";
 
-// need to change later
-let last_notice: string | null = "Loading";
+let data = readFileSync('./database/notice.json');
+let notices = JSON.parse(data.toString());
+let last_notice = notices[notices.length - 1];
 
 export default {
     name: Events.ClientReady,
@@ -12,7 +15,7 @@ export default {
         let status_index = 0;
         setInterval(() => {
             const sts = [
-                {name: `custom`, type: 4, state: `🪧Latest notice: ${last_notice}` as const},
+                {name: `custom`, type: 4, state: `🪧Latest notice: ${last_notice.title}` as const},
                 { name: `with ${client.guilds.cache.size} servers`, type: 0 as const}
             ];
             client.user?.setPresence({
@@ -22,5 +25,8 @@ export default {
 
             status_index = (status_index + 1) % sts.length;
         }, 1 * 60 * 1000);
+
+        // fetchNotice
+        setInterval(() => fetchNotice(client), 1 * 60 * 1000);
     }
 }

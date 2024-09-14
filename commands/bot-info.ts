@@ -1,8 +1,8 @@
 import { ChatInputCommandInteraction, Client, EmbedBuilder } from "discord.js";
 import os from "os";
 import { currentLoad } from "systeminformation";
-import { version } from "../package.json";
-import { Command } from "../types/Command";
+import config from "../package.json" assert { type: "json" };
+import { Command } from "../types/Command.js";
 
 const start_time = Date.now();
 
@@ -30,7 +30,7 @@ export default {
         const api_time_before = Date.now();
         await interaction.deferReply();
         const api_latency = Date.now() - api_time_before;
-        
+
         const cpu_use = await currentLoad();
         const cpu_usage = cpu_use.currentLoad.toFixed(2);
 
@@ -39,7 +39,7 @@ export default {
             .setDescription(`\`\`\`yml\nName: ${client.user?.tag}\nBot Latency: ${api_latency}ms \nRuntime: ${days} Days︲${hours} Hrs︲${mins} Mins︲${secs} Secs \`\`\``)
             .addFields(
                 { name: "<a:arrow:1003994520901386281> General -- Stats", value: `\`\`\`yml\nServers: ${server_count} \nUsers: ${user_count}\`\`\``, inline: true },
-                { name: "<a:arrow:1003994520901386281> Bot -- Stats", value: `\`\`\`yml\nApp Version: v${version} \nNode.js: ${node_version}\`\`\``, inline: true },
+                { name: "<a:arrow:1003994520901386281> Bot -- Stats", value: `\`\`\`yml\nApp Version: v${config.version} \nNode.js: ${node_version}\`\`\``, inline: true },
                 { name: "<a:arrow:1003994520901386281> System -- Stats", value: `\`\`\`yml\nOS: ${os_info} \nPlatform: ${platform} \nCPU Usage: ${cpu_usage} % \nRAM Usage: ${ram_usages} MB\`\`\``, inline: false },
                 { name: "<a:arrow:1003994520901386281> Developer", value: `\`\`\`yml\nName: Xenon Colt \nUsername: xenoncolt\`\`\` [Website](https://xenoncolt.me)`, inline: false }
             );

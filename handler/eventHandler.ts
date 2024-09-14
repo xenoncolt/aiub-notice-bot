@@ -1,7 +1,11 @@
 import { Client, Events } from "discord.js";
 import fs from "fs";
 import path from "path";
-import { pathToFileURL } from "url";
+import { pathToFileURL, fileURLToPath } from "url";
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export function loadEvents(client: Client) {
     const events_path = path.resolve(__dirname, './events');
@@ -9,8 +13,9 @@ export function loadEvents(client: Client) {
 
     for (const file of events_files) {
         const file_path = path.join(events_path, file);
+        console.log(`Loading command from: ${file_path}`);
         
-        import(pathToFileURL(file_path).href).then(event_module => {
+        import(pathToFileURL(file_path).toString()).then(event_module => {
             const event = event_module.default;
 
             if (event.once) {

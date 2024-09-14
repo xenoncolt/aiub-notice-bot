@@ -1,21 +1,11 @@
-import { Client, Collection, Events, GatewayIntentBits } from "discord.js";
-import { REST } from "@discordjs/rest";
-import {  } from "discord-api-types/v10";
-import sqlite3 from "sqlite3";
-import { Database, open } from "sqlite";
-import {  } from "jsdom";
-import {  } from "url";
-import {  } from "pdf-to-png-converter";
-import fs from "fs";
-import fetch from "node-fetch";
-import path from "path";
-import {  } from "./config.json";
+import { Client, Collection, GatewayIntentBits } from "discord.js";
+
 
 import "dotenv/config";
 import { ExtendedClient } from "./types/ExtendedClient";
-import { loadCommands } from "./handler/slashCommandHandler";
-import { loadEvents } from "./handler/eventHandler";
-import { Command } from "./types/Command";
+import { loadCommands } from "./handler/slashCommandHandler.js";
+import { loadEvents } from "./handler/eventHandler.js";
+import { Command } from "./types/Command.js";
 
 
 const client: ExtendedClient = new Client({
