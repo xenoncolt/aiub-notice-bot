@@ -4,3 +4,5 @@ config.json
 .env
 package-lock.json
 /database
+/database/channel.sqlite
+/database/data.sqlite
