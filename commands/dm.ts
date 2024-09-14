@@ -1,8 +1,9 @@
 import sqlite3 from "sqlite3";
-import { open } from "sqlite";
-import { DMChannel } from "discord.js";
+import { Database, open } from "sqlite";
+import { ChatInputCommandInteraction, User } from "discord.js";
+import { Command } from "../types/Command";
 
-let db;
+let db : Database;
 
 (async () => {
     db = await open({
@@ -17,7 +18,7 @@ let db;
         aiub_cc TEXT,
         UNIQUE(notice, news, aiub_cc)
     )
-    `);
+    `)
 })();
 
 export default {
@@ -80,7 +81,7 @@ export default {
             ]
         }
     ],
-    async execute(interaction) {
+    async execute(interaction: ChatInputCommandInteraction) {
         try {
             await interaction.deferReply({ ephemeral: true });
 
@@ -89,118 +90,75 @@ export default {
 
             const user_id = interaction.user.id;
 
-            const exists = await checkIfUserExists(type, user_id);
-
             if (sub_cmd === 'setup') {
-                const can_dm = await canSendDM(interaction.user, type);
-
-                if (exists) {
-                    await interaction.editReply(`You already subscribe to ${type}.`);
+                if (await checkIfUserExists(type as string, user_id)) {
+                    await interaction.editReply(`You already subscribe to ${type}`);
                     return;
                 }
 
-                if (!can_dm) {
-                    await interaction.editReply("I can't send you direct message. Please make sure you `Add App` as a user(`Try it Now`).\nIf you don't know how then click me and you will see a `Add App` button. Click that button and select `Try it Now` and then click `Authorize`.\nIf you still face problem then contact with me father [website](https://xenoncolt.me)")
+                if (!(canSendDM(interaction.user, type))) {
+                    await interaction.editReply(`I can't send you direct message. Please make sure you \`Add App\` as a user(\`Try it Now\`).\nIf you don't know how then click me and you will see a \`Add App\` button. Click that button and select \`Try it Now\` and then click \`Authorize\`.\nIf you still face problem then contact with me father [website](https://xenoncolt.me)`);
                     return;
                 }
 
-                await updateDMChannel(type, user_id);
-                await interaction.editReply(`I will send you **${type}** notifications when they are published.\n\nIf you want to stop receiving **${type}** notifications, type \`/dm reset\`.`);
+                await updateDMChannel(type as string, user_id);
+                await interaction.editReply(`I will send you **${type}** notifications when they are published.\n\nIf you want to stop receiving **${type}** notifications, use\`/dm reset\` command.`);
             }
 
             if (sub_cmd === 'reset') {
-                
-                
-                if (!exists) {
+                if (!(await checkIfUserExists(type as string, user_id))) {
                     await interaction.editReply(`You haven't set up **${type}** notifications yet.`);
                 } else {
-                    await resetDM(type, user_id);
+                    await resetDM(type as string, user_id);
                     await interaction.editReply(`You have been unsubscribed from **${type}** notifications.`);
                 }
             }
-        }catch (error) {
+        } catch (error) {
             console.error('Something went wrong in DM.js: ', error);
             await interaction.editReply('An error occurred while processing your request.');
         }
-    } 
+    }
+} as Command;
+
+async function checkIfUserExists(column: string, user_id: string): Promise<boolean> {
+    const check_if_exists_query = `SELECT 1 FROM dm WHERE ${column} = ?`;
+    const exists = await db.get(check_if_exists_query, [user_id]);
+    return exists ? true : false;
 }
 
-async function canSendDM(user, type) {
+async function canSendDM(user: User, type: string | null): Promise<boolean> {
     try {
         const dm = await user.createDM();
-        await dm.send(`I will be send all new ${type} here.`);
+        await dm.send(`You have successfully subscribed to ${type}`);
         return true;
     } catch (error) {
         return false;
     }
 }
 
-async function updateDMChannel(column, user_id) {
-    // const check_if_exists_query = `SELECT 1 FROM dm WHERE ${column} = ?`;
-    // const empty_slot_query = `SELECT rowid FROM dm WHERE ${column} IS NULL LIMIT 1`;
-    // const insert_query = `INSERT INTO dm (${column}) VALUES (?)`;
-    // const update_query = `UPDATE dm SET ${column} = ? WHERE rowid = ?`;
-
-    // const exists = await db.get(check_if_exists_query, [userId]);
-
-    // try {
-    //     if (exists) {
-    //         console.log(`${userId} already exists in ${column}`);
-    //         return;
-    //     }
-    
-    //     const row = await db.get(empty_slot_query);
-    
-    //     if (row) {
-    //         await db.run(update_query, [userId, row.rowid]);
-    //     } else {
-    //         const columns = ['notice', 'news', 'aiub_cc'].filter(col => col !== column);
-    //         const values = await db.get(`SELECT ${columns.join(', ')} FROM dm ORDER BY rowid DESC LIMIT 1`);
-
-    //         if (values) {
-    //             const column_values = columns.map(col => values[col]);
-    //             await db.run(`INSERT INTO dm (${columns.join(', ')}, ${column}) VALUES (${column_values.map(() => '?').join(', ')}, ?)`, [...column_values, userId]);
-    //         } else {
-    //             await db.run(insert_query, [userId]);
-    //         }
-    //         // await db.run(insert_query, [userId]);
-    //     }
-
-    
-    // } catch (error) {
-    //     console.error('SQL error in updateDMChannel:', error);
-    //     throw error;
-    // }
-
+async function updateDMChannel(column: string, user_id: string): Promise<void> {
     const check_if_exists_query = `SELECT rowid FROM dm WHERE ${column} = ? OR ${column} IS NULL LIMIT 1`;
     const update_query = `UPDATE dm SET ${column} = ? WHERE rowid = ?`;
     const insert_query = `INSERT INTO dm (${column}) VALUES (?)`;
 
     try {
-        const row = await db.get(check_if_exists_query, [user_id]);
-
+        const row = await db.get(check_if_exists_query, [user_id])
         if (row) {
             await db.run(update_query, [user_id, row.rowid]);
-            console.log(`${user_id} has been update or inserted into ${column}`);
+            console.log(`${user_id} has been inserted or into ${column}`);
         } else {
             await db.run(insert_query, [user_id]);
             console.log(`${user_id} has been inserted into ${column}`);
         }
     } catch (error) {
-        console.error('SQL error in updateDMChannel:', error);
+        console.error('SQL error in updateDMChannel: ', error);
         throw error;
     }
 }
 
-async function checkIfUserExists(column, user_id) {
-    const check_if_exists_query = `SELECT 1 FROM dm WHERE ${column} = ?`;
-    const exists = await db.get(check_if_exists_query, [user_id]);
-    return exists ? true : false;
-}
-
-async function resetDM(column, user_id) {
+async function resetDM(column: string, user_id: string): Promise<void> {
     const reset_query = `UPDATE dm SET ${column} = NULL WHERE ${column} = ?`;
-    
+
     try {
         await db.run(reset_query, [user_id]);
     } catch (error) {
@@ -208,4 +166,3 @@ async function resetDM(column, user_id) {
         throw error;
     }
 }
-

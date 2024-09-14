@@ -1,5 +1,6 @@
-.env
+build
 node_modules
-package-lock.json
 config.json
-database/channel.sqlite
+.env
+package-lock.json
+/database

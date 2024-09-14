@@ -1,24 +1,45 @@
 {
   "name": "aiub-notice-bot",
-  "version": "0.13.1",
+  "version": "1.0.0",
   "description": "A notice bot which fetch notice aiub page to discord",
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "node index.js"
+    "dev": "tsx watch index.ts",
+    "build": "tsc",
+    "start": "node build/index.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xenoncolt/aiub-notice-bot.git"
+  },
+  "keywords": [
+    "aiub-notice-bot"
+  ],
   "author": "Xenon Colt",
-  "license": "ISC",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/xenoncolt/aiub-notice-bot/issues"
+  },
+  "homepage": "https://github.com/xenoncolt/aiub-notice-bot#readme",
   "dependencies": {
-    "@discordjs/rest": "2.3.0",
-    "axios": "1.7.5",
-    "discord.js": "14.15.3",
+    "@discordjs/rest": "^2.4.0",
+    "@types/jsdom": "^21.1.7",
+    "axios": "^1.7.7",
+    "discord.js": "14.16.2",
     "dotenv": "^16.4.5",
-    "jsdom": "24.1.1",
+    "jsdom": "^25.0.0",
     "node-fetch": "^3.3.2",
-    "pdf-to-png-converter": "^3.2.0",
+    "pdf-to-png-converter": "^3.3.0",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
-    "systeminformation": "5.23.5"
+    "systeminformation": "^5.23.5"
+  },
+  "devDependencies": {
+    "@types/node": "22.5.5",
+    "ts-node-dev": "^2.0.0",
+    "tslib": "^2.7.0",
+    "tsx": "4.19.1",
+    "typescript": "5.6.2"
   }
 }

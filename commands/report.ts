@@ -1,4 +1,5 @@
-import { EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, Client, EmbedBuilder, User } from "discord.js";
+import { Command } from "../types/Command";
 
 export default {
     name: 'report',
@@ -28,42 +29,35 @@ export default {
             required: true
         }
     ],
-    async execute(interaction, client) {
+    async execute(interaction: ChatInputCommandInteraction, client: Client) {
         try {
             const type = interaction.options.getString('type');
             const msg = interaction.options.getString('message');
             const user = interaction.user;
-            const owner = await client.users.cache.get('709210314230726776');
+            const owner = client.users.cache.get('709210314230726776');
 
-            if (type === 'bug') {
-                const embed = reportMsg(user, 'Bug Report', msg);
+            if (!owner) throw new Error('Owner not found in user cache.');
 
-                await owner.send({ embeds: [embed] });
-                await interaction.reply('Report message send to the developer.\nYou can also create issue [here](https://github.com/xenoncolt/aiub-notice-bot/issues/new)');
-            } else if (type === 'new_feature') {
-                const embed = reportMsg(user, 'Add New Feature', msg);
-
-                await owner.send({ embeds: [embed] });
-                await interaction.reply('Report message send to the developer.\nYou can also create issue [here](https://github.com/xenoncolt/aiub-notice-bot/issues/new)');
-            } 
+            const embed = reportMsg(user, type === 'bug'? 'Bug Report' : 'Add New Feature', msg!);
+            
+            await owner.send({ embeds: [embed] });
+            await interaction.reply('Report message sent to the developer.\nYou can also create an issue [here](https://github.com/xenoncolt/aiub-notice-bot/issues/new)');
         } catch (error) {
             console.error(error);
             await interaction.reply('There was an error while executing this command!');
         }
     }
-}
+} as Command;
 
-function reportMsg(user, title, msg) {
-    const random_color = Math.floor(Math.random() * 16777215);
-
+function reportMsg(user: User, title: string, msg: string) {
     const embed = new EmbedBuilder()
         .setTitle(title)
         .setAuthor({
             name: user.username,
-            iconURL: user.displayAvatarURL({ dynamic: true })
+            iconURL: user.displayAvatarURL()
         })
         .setDescription(msg)
-        .setColor(random_color)
+        .setColor('Random')
         .setTimestamp();
 
     return embed;
