@@ -7,6 +7,7 @@ import config from "../config.json" assert { type: "json" };
 import { readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { pdfToPng } from "pdf-to-png-converter";
+import { fileURLToPath } from "url";
 
 // Database for notice channel only
 let notice_db: Database;
@@ -25,6 +26,9 @@ open({
 }).then((database) => {
     db = database;
 })
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 
 export async function fetchNotice(client: Client): Promise<void> {

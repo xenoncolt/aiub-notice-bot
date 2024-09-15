@@ -5,6 +5,10 @@ import { FacultyProfile } from "../types/FacultyProfile.js";
 import path, { resolve } from "path";
 import { createWriteStream, mkdirSync } from "fs";
 import { Command } from "../types/Command";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default {
     name: 'faculty-details',
