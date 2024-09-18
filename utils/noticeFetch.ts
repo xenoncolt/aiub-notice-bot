@@ -199,7 +199,7 @@ export async function fetchNotice(client: Client): Promise<void> {
                 if (user_rows.length > 0) {
                     for (const user_row of user_rows) {
                         const user_id = user_row.notice;
-                        const user = client.users.cache.get(user_id);
+                        const user = await client.users.fetch(user_id).catch(console.error);
 
                         // If the user can't found, remove from the database
                         if (!user) {
