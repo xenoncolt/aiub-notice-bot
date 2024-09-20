@@ -29,10 +29,15 @@ export default {
                 const pdf_path = await downloadPDF(`${config.url}${pdf_url}`);
                 const images = await convertPDFToImages(pdf_path);
 
-                for (const image_path of images) {
-                    const attachment = new AttachmentBuilder(image_path);
+                if (typeof images === 'string') {
+                    const attachment = new AttachmentBuilder(images);
                     await interaction.user.send({ files: [attachment] });
-                    unlinkSync(image_path);
+                } else {
+                    for (const image_path of images) {
+                        const attachment = new AttachmentBuilder(image_path);
+                        await interaction.user.send({ files: [attachment] });
+                        unlinkSync(image_path);
+                    }
                 }
 
                 unlinkSync(pdf_path);

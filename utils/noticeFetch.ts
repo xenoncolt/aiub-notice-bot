@@ -278,7 +278,7 @@ export async function downloadPDF(url: string): Promise<string> {
     return pdf_path;
 }
 
-export async function convertPDFToImages(pdf_path: string): Promise<string[]> {
+export async function convertPDFToImages(pdf_path: string): Promise<string[] | string> {
     try {
         const output_dir = path.dirname(pdf_path);
         const pdf_buffer = readFileSync(pdf_path);
@@ -288,6 +288,8 @@ export async function convertPDFToImages(pdf_path: string): Promise<string[]> {
             useSystemFonts: false,
             viewportScale: 3.0
         });
+
+        if (images.length > 5) return pdf_path;
 
         const image_paths = [];
 
