@@ -88,6 +88,13 @@ export default {
             const sub_cmd = interaction.options.getSubcommand();
             const type = interaction.options.getString('type');
 
+            // Validate type is one of 'notice', 'news', or 'aiub_cc'
+            const valid_types = ['notice', 'news', 'aiub_cc'];
+            if (type === null || !valid_types.includes(type)) {
+                await interaction.editReply(`Invalid type selected. Please choose either 'notice', 'news', or 'aiub_cc'.`);
+                return;
+            }
+
             const user_id = interaction.user.id;
 
             if (sub_cmd === 'setup') {
