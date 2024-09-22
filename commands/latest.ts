@@ -32,6 +32,13 @@ export default {
 
             const text = interaction.options.getString('type');
 
+            // Validate type is one of 'notice', 'news', or 'aiub_cc'
+            const valid_types = ['notice', 'news', 'aiub_cc'];
+            if (text === null || !valid_types.includes(text)) {
+                await interaction.editReply(`Invalid type selected. Please choose either 'notice', 'news', or 'aiub_cc'.`);
+                return;
+            }
+
             if (text === 'notice') {
                 const embed = new EmbedBuilder()
                     .setTitle(latest_notice.title)
