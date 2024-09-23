@@ -1,4 +1,4 @@
-import { ActionRowBuilder, Client, PermissionFlagsBits, StringSelectMenuBuilder, TextChannel, EmbedBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuOptionBuilder, DiscordAPIError } from "discord.js";
+import { ActionRowBuilder, Client, PermissionFlagsBits, StringSelectMenuBuilder, TextChannel, EmbedBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuOptionBuilder, DiscordAPIError, NewsChannel } from "discord.js";
 import sqlite3 from "sqlite3";
 import { Database, open } from "sqlite";
 import { JSDOM } from "jsdom";
@@ -99,7 +99,7 @@ export async function fetchNotice(client: Client): Promise<void> {
                             const channel_ID = row.channel_id;
                             const channel = client.channels.cache.get(channel_ID);
 
-                            if (!(channel instanceof TextChannel)) {
+                            if (!(channel instanceof TextChannel) && !(channel instanceof NewsChannel)) {
                                 const sql = `DELETE FROM channel WHERE channel_id = ?`;
                                 try {
                                     const result = await notice_db.run(sql, [channel_ID]);
@@ -156,7 +156,7 @@ export async function fetchNotice(client: Client): Promise<void> {
                             //     continue;
                             // }
 
-                            if (channel && channel instanceof TextChannel) {
+                            if (channel && (channel instanceof TextChannel || channel instanceof NewsChannel)) {
                                 const embed = new EmbedBuilder()
                                     .setTitle(title)
                                     .setDescription(desc)

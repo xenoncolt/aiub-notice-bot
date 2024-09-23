@@ -1,6 +1,6 @@
 import sqlite3 from "sqlite3";
 import { Database, open } from "sqlite";
-import { ChatInputCommandInteraction, Client, GuildMember, PermissionFlagsBits, TextChannel } from "discord.js";
+import { ChatInputCommandInteraction, Client, GuildMember, NewsChannel, PermissionFlagsBits, TextChannel } from "discord.js";
 import { Command } from "../types/Command";
 
 let db: Database;
@@ -51,7 +51,7 @@ export default {
             await interaction.deferReply();
 
             const sub_cmd = interaction.options.getSubcommand();
-            const channel = interaction.options.getChannel('channel') as TextChannel;
+            const channel = interaction.options.getChannel('channel') as TextChannel | NewsChannel;
             const guild_id = interaction.guild?.id;
             const client = interaction.client as Client;
             const member = interaction.member as GuildMember;
@@ -74,8 +74,8 @@ export default {
                     return;
                 }
 
-                if (!(channel instanceof TextChannel)) {
-                    await interaction.editReply('Channel is not a Text Channel. Please select a text channel.');
+                if (!(channel instanceof TextChannel) && !(channel instanceof NewsChannel)) {
+                    await interaction.editReply('Channel is not a Text Channel Or Announcement Channel. Please select a text channel or announcement channel.');
                     return;
                 }
 
