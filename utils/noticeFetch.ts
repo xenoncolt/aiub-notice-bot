@@ -223,39 +223,41 @@ export async function fetchNotice(client: Client): Promise<void> {
 
                         try {
                             const dm_channel = await user.createDM();
-                        
-                            const embed = new EmbedBuilder()
-                                .setTitle(title)
-                                .setDescription(desc)
-                                .addFields(
-                                    { name: 'Published Date:', value: `${day} ${month} ${year}`}
-                                )
-                                .setURL(link)
-                                .setColor('Random')
-                                .setTimestamp();
 
-                            const link_btn = new ActionRowBuilder<ButtonBuilder>()
-                                .addComponents(
-                                    new ButtonBuilder()
-                                        .setLabel('Details')
-                                        .setStyle(ButtonStyle.Link)
-                                        .setURL(link)
-                                );
+                            if (dm_channel.isSendable()) {
+                                const embed = new EmbedBuilder()
+                                    .setTitle(title)
+                                    .setDescription(desc)
+                                    .addFields(
+                                        { name: 'Published Date:', value: `${day} ${month} ${year}`}
+                                    )
+                                    .setURL(link)
+                                    .setColor('Random')
+                                    .setTimestamp();
 
-                            if (pdf_options.length > 0) {
-                                const select_menu = new StringSelectMenuBuilder()
-                                    .setCustomId('select-pdf')
-                                    .setPlaceholder('Select a PDF to get as Image')
-                                    .addOptions(
-                                        pdf_options.map(option => new StringSelectMenuOptionBuilder(option))
+                                const link_btn = new ActionRowBuilder<ButtonBuilder>()
+                                    .addComponents(
+                                        new ButtonBuilder()
+                                            .setLabel('Details')
+                                            .setStyle(ButtonStyle.Link)
+                                            .setURL(link)
                                     );
 
-                                const menu = new ActionRowBuilder<StringSelectMenuBuilder>()
-                                    .addComponents(select_menu);
+                                if (pdf_options.length > 0) {
+                                    const select_menu = new StringSelectMenuBuilder()
+                                        .setCustomId('select-pdf')
+                                        .setPlaceholder('Select a PDF to get as Image')
+                                        .addOptions(
+                                            pdf_options.map(option => new StringSelectMenuOptionBuilder(option))
+                                        );
 
-                                await dm_channel.send({ embeds: [embed], components: [link_btn, menu] })
-                            } else {
-                                await dm_channel.send({ embeds: [embed], components: [link_btn] });
+                                    const menu = new ActionRowBuilder<StringSelectMenuBuilder>()
+                                        .addComponents(select_menu);
+
+                                    await dm_channel.send({ embeds: [embed], components: [link_btn, menu] });
+                                } else {
+                                    await dm_channel.send({ embeds: [embed], components: [link_btn] });
+                                }
                             }
                         } catch (error) {
                             if (error instanceof DiscordAPIError && error.message.includes('Cannot send messages to this user')) {
