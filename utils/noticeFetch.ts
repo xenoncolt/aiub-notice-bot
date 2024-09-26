@@ -156,7 +156,7 @@ export async function fetchNotice(client: Client): Promise<void> {
                                             default_channel.send('I don\'t have permission to manage role in this channel. If you don\'t know how to give me that permission then just invite me again (Click to my profile -> Add App -> Add to server).');
                                         }
                                     }
-                                    continue;
+                                    if (!permission.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks])) continue;
                                 }
 
                                 
