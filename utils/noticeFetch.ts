@@ -1,4 +1,4 @@
-import { ActionRowBuilder, Client, PermissionFlagsBits, StringSelectMenuBuilder, TextChannel, EmbedBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuOptionBuilder, DiscordAPIError, NewsChannel } from "discord.js";
+import { ActionRowBuilder, Client, PermissionFlagsBits, StringSelectMenuBuilder, TextChannel, EmbedBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuOptionBuilder, DiscordAPIError, NewsChannel, ChannelType } from "discord.js";
 import sqlite3 from "sqlite3";
 import { Database, open } from "sqlite";
 import { JSDOM } from "jsdom";
@@ -118,7 +118,9 @@ export async function fetchNotice(client: Client): Promise<void> {
 
                             // if (channel && channel instanceof TextChannel) {
                                 const permission = channel.permissionsFor(client.user!);
-                                if (!permission?.has(PermissionFlagsBits.ViewChannel) || !permission.has(PermissionFlagsBits.ManageChannels)) {
+
+                                // I have to change it later (&& to ||)
+                                if (!permission?.has(PermissionFlagsBits.ViewChannel)) {
                                     const sql = `DELETE FROM channel WHERE channel_id = ?`;
                                     try {
                                         const result = await notice_db.run(sql, [channel_ID]);
@@ -135,10 +137,29 @@ export async function fetchNotice(client: Client): Promise<void> {
                                     continue;
                                 }
 
-                                if (!permission?.has(PermissionFlagsBits.SendMessages) || !permission.has(PermissionFlagsBits.EmbedLinks)) {
-                                    await channel.permissionOverwrites.create(client.user!, { SendMessages: true, EmbedLinks: true });
-                                    await channel.permissionOverwrites.create(channel.guild.roles.everyone, { SendMessages: false });
+                                if (permission.has(PermissionFlagsBits.ManageRoles)) {
+                                    if (!permission?.has(PermissionFlagsBits.SendMessages) || !permission.has(PermissionFlagsBits.EmbedLinks)) {
+                                        await channel.permissionOverwrites.create(client.user!, { SendMessages: true, EmbedLinks: true });
+                                        await channel.permissionOverwrites.create(channel.guild.roles.everyone, { SendMessages: false });
+                                    }
+                                } else if (!permission.has(PermissionFlagsBits.ManageRoles)) {
+                                    const warn_guild = client.guilds.cache.get(guild.id);
+                                    if (warn_guild) {
+                                        const bot = warn_guild.members.me;
+                                        if (!bot) return;
+                                        const default_channel = warn_guild.channels.cache.find(
+                                            (channel) =>
+                                                channel.type === ChannelType.GuildText && channel.permissionsFor(bot).has(PermissionFlagsBits.SendMessages)
+                                        );
+
+                                        if (default_channel && default_channel instanceof TextChannel) {
+                                            default_channel.send('I don\'t have permission to manage role in this channel. If you don\'t know how to give me that permission then just invite me again (Click to my profile -> Add App -> Add to server).');
+                                        }
+                                    }
+                                    continue;
                                 }
+
+                                
                             // } else  {
                             //     const sql = `DELETE FROM channel WHERE channel_id = ?`;
                             //     try {

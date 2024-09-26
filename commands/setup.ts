@@ -79,8 +79,8 @@ export default {
                     return;
                 }
 
-                if (!permission.has([PermissionFlagsBits.ViewChannel, PermissionFlagsBits.ManageChannels])) {
-                    await interaction.editReply('I don\'t have permission to view or manage this channel.');
+                if (!permission.has([PermissionFlagsBits.ViewChannel, PermissionFlagsBits.ManageRoles])) {
+                    await interaction.editReply('I don\'t have permission to view or manage role in this channel. If you don\'t know how to give me that permission then just invite me again (Click to my profile -> Add App -> Add to server).');
                     return;
                 }
 
