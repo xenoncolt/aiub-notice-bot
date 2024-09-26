@@ -1,4 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
+import config from "../config.json" assert { type: "json" };
 import { readFileSync } from "fs";
 import { Command } from "../types/Command";
 
@@ -32,12 +33,6 @@ export default {
 
             const text = interaction.options.getString('type');
 
-            // Validate type is one of 'notice', 'news', or 'aiub_cc'
-            const valid_types = ['notice', 'news', 'aiub_cc'];
-            if (text === null || !valid_types.includes(text)) {
-                await interaction.editReply(`Invalid type selected. Please choose either 'notice', 'news', or 'aiub_cc'.`);
-                return;
-            }
 
             if (text === 'notice') {
                 const embed = new EmbedBuilder()
@@ -47,7 +42,7 @@ export default {
                         { name: 'Published Date:', value: `${latest_notice.day} ${latest_notice.month} ${latest_notice.year}` }
                     )
                     .setColor('Random')
-                    .setURL(latest_notice.link)
+                    .setURL(config.url+latest_notice.link)
                     .setTimestamp();
 
                 const link_btn = new ActionRowBuilder<ButtonBuilder>()
@@ -55,7 +50,7 @@ export default {
                         new ButtonBuilder()
                             .setLabel('Details')
                             .setStyle(ButtonStyle.Link)
-                            .setURL(latest_notice.link)
+                            .setURL(config.url+latest_notice.link)
                     );
 
                 await interaction.reply({ embeds: [embed], components: [link_btn] });
