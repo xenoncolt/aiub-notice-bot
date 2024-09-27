@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Client, EmbedBuilder, TextChannel } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Client, EmbedBuilder, TextChannel } from "discord.js";
 import config from "../config.json" assert { type: "json" };
 import { FacultyProfile } from "../types/FacultyProfile.js";
 import path, { resolve } from "path";
@@ -13,23 +13,46 @@ const __dirname = path.dirname(__filename);
 export default {
     name: 'faculty-details',
     type: 3,
-    description: 'Get your faculty or Teacher\'s details using email',
+    description: 'Get your faculty or Teacher\'s details using either Email or Name',
     options: [
         {
             type: 3,
+            name: 'name',
+            description: 'Write your faculty name (ex. Shahriar Haque)',
+            required: false,
+            autocomplete: true
+        },
+        {
+            type: 3,
             name: 'email',
-            description: 'Enter your faculty email (ex. fac@aiub.edu)',
-            required: true
+            description: 'Write your faculty email (ex. fac@aiub.edu)',
+            required: false,
+            autocomplete: true
         }
     ],
 
     async execute (interaction: ChatInputCommandInteraction, client: Client) {
         try {
             const email = interaction.options.getString('email');
+            const name = interaction.options.getString('name');
+
+            if (!email && !name) {
+                return interaction.reply({content: 'Please provide either a email or name to search.', ephemeral: true});
+            }
 
             const response = await axios.get(config.faculty_list);
             const profile_list: FacultyProfile[] = response.data.EmployeeProfileLightList;
-            const profile = profile_list.find(profile => profile.CvPersonal.Email === email);
+            // const profile = profile_list.find(profile => profile.CvPersonal.Email === email);
+
+            let profile: FacultyProfile | undefined;
+
+            if (name) {
+                profile = profile_list.find(profile => profile.CvPersonal.Name.toUpperCase() === name.toUpperCase());
+            }
+
+            if (!profile && email) {
+                profile = profile_list.find(profile => profile.CvPersonal.Email.toLowerCase() === email.toLowerCase());
+            }
 
             if (profile) {
                 const embed = await getFacultyDetails(profile, client);
@@ -42,12 +65,40 @@ export default {
                     );
                 await interaction.reply({ embeds: [embed!], components: [link_btn]});
             } else {
-                await interaction.reply('Faculty or Teacher you are looking for is not found.\nPlease make sure your email is correct. Do not include any space.\nExample: \`/faculty-room this_part\`');
+                await interaction.reply('Faculty or Teacher you are looking for is not found.\nPlease make sure your **Name** or **Email** is correct. It will also suggest some name where you can select one. You can use either **Name** or **Email** to search.');
             }
         } catch (error) {
             console.error(error);
             await interaction.reply('There was an error while executing this command!');
         }
+    },
+
+    async autocomplete(interaction: AutocompleteInteraction) {
+        const focused_option = interaction.options.getFocused(true);
+        const response = await axios.get(config.faculty_list);
+        const profile_list: FacultyProfile[] = response.data.EmployeeProfileLightList;
+
+        let filtered_profiles: FacultyProfile[] = [];
+
+        if (focused_option.name === 'name') {
+            const focused_value = focused_option.value.toUpperCase();
+            filtered_profiles = profile_list.filter(profile => profile.CvPersonal.Name.toUpperCase().includes(focused_value));
+        }
+
+        if (focused_option.name === 'email') {
+            const focused_value = focused_option.value.toLowerCase();
+            filtered_profiles = profile_list.filter(profile => {
+                const email = profile.CvPersonal.Email; 
+                return email && email.startsWith(focused_value);
+            });
+        }
+
+        await interaction.respond(
+            filtered_profiles.slice(0, 25).map(profile => ({
+                name: focused_option.name === 'name' ? profile.CvPersonal.Name : profile.CvPersonal.Email,
+                value: focused_option.name === 'name' ? profile.CvPersonal.Name : profile.CvPersonal.Email
+            }))      
+        );
     }
 } as Command;
 
@@ -80,7 +131,7 @@ async function getFacultyDetails(profile: FacultyProfile, client: Client) {
 }
 
 async function downloadImage(url: string): Promise<string> {
-    const dir = path.join(__dirname, './download');
+    const dir = path.join(__dirname, '../download');
 
     mkdirSync(dir, { recursive: true });
 
