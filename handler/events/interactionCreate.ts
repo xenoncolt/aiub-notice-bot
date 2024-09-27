@@ -8,7 +8,7 @@ export default {
     name: Events.InteractionCreate,
     once: false,
     async execute(interaction: Interaction, client: ExtendedClient) {
-        if(!interaction.isChatInputCommand() && !interaction.isStringSelectMenu()) return;
+        if(!interaction.isChatInputCommand() && !interaction.isStringSelectMenu() && !interaction.isAutocomplete()) return;
 
         if (interaction.isChatInputCommand()) {
             const cmd = client.commands.get(interaction.commandName);
@@ -45,6 +45,15 @@ export default {
             } catch (error) {
                 console.error('Failed to send PDF image to user:', error);
                 await interaction.editReply({ content: 'Failed to send the PDF images to yours DMs. Please make sure you `ADD APP` as `User` and try again.' });
+            }
+        } else if (interaction.isAutocomplete()) {
+            const cmd = client.commands.get(interaction.commandName);
+            if (!cmd || !cmd.autocomplete) return;
+
+            try {
+                await cmd.autocomplete(interaction, client);
+            } catch (error) {
+                console.error('Error handling autocomplete interaction: ', error);
             }
         }
     }
