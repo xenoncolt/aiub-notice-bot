@@ -2,6 +2,9 @@ import { Client, Events } from "discord.js";
 import { readFileSync } from "fs";
 import { fetchNotice } from "../../utils/noticeFetch.js";
 import package_info from "../../package.json" assert { type: "json" };
+import { execSync } from "child_process";
+
+const commit_count = execSync('git rev-list --count HEAD').toString().trim();
 
 let data = readFileSync('./database/notice.json');
 let notices = JSON.parse(data.toString());
@@ -18,7 +21,7 @@ export default {
             const sts = [
                 {name: `custom`, type: 4, state: `🪧Latest notice: ${last_notice.title}` as const},
                 { name: `with ${client.guilds.cache.size} servers`, type: 0 as const},
-                { name: `custom`, type: 4, state: `🤖 Version : v${package_info.version}` }
+                { name: `custom`, type: 4, state: `🤖 Version : v${package_info.version}.${commit_count}` }
             ];
             client.user?.setPresence({
                 activities: [sts[status_index]],
