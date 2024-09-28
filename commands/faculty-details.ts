@@ -61,7 +61,7 @@ export default {
                         new ButtonBuilder()
                             .setLabel('Details')
                             .setStyle(ButtonStyle.Link)
-                            .setURL('https://www.aiub.edu/faculty-list/faculty-profile#'+email)
+                            .setURL('https://www.aiub.edu/faculty-list/faculty-profile#'+profile.CvPersonal.Email)
                     );
                 await interaction.reply({ embeds: [embed!], components: [link_btn]});
             } else {
