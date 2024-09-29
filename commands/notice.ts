@@ -27,7 +27,7 @@ export default {
 
             if (!notice) await interaction.reply({ content: "Notice not Found!", ephemeral: true });
 
-            const link_url = notice?.link?.startsWith(config.url) ? notice.link : config.url+notice?.link;
+            const link_url = notice?.link_info.startsWith(config.url) ? notice.link_info : config.url+notice?.link_info;
 
             const embed = new EmbedBuilder()
                 .setTitle(notice?.title as string)
