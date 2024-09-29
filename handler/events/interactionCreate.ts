@@ -22,6 +22,7 @@ export default {
                 await client.users.cache.get(config.owner)?.send({ content: `Something wrong with your code, Error: \n\`\`\`cmd\n${error}\`\`\``});
             }
         } else if (interaction.isStringSelectMenu()) {
+            // this need to be change later
             const pdf_url = interaction.values[0];
             try {
                 await interaction.deferReply({ ephemeral: true });

@@ -32,6 +32,6 @@ export default {
         }, 1 * 60 * 1000);
 
         // fetchNotice
-        setInterval(() => fetchNotice(client), 5 * 60 * 1000);
+        setInterval(() => fetchNotice(client), 10 * 60 * 1000);
     }
 }
