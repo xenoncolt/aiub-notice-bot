@@ -1,6 +1,7 @@
 import { ActionRowBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Client, EmbedBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
 import notices from "../database/notice.json" assert { type: "json" };
 import config from "../config.json" assert { type: "json" };
+import { Command } from "../types/Command";
 
 export default {
     name: 'notice',
@@ -74,7 +75,9 @@ export default {
     async autocomplete(interaction: AutocompleteInteraction) {
         const focused_option = interaction.options.getFocused();
 
-        const titles = notices.filter(notice => notice.title.toUpperCase().includes(focused_option.toUpperCase())).slice(0, 25);
+        const reverse_notices = notices.reverse();
+
+        const titles = reverse_notices.filter(notice => notice.title.toUpperCase().includes(focused_option.toUpperCase())).slice(0, 25);
 
         
 
@@ -87,4 +90,4 @@ export default {
             }})
         );
     }
-}
+} as Command;
