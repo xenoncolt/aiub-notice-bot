@@ -77,7 +77,10 @@ export default {
 
         const reverse_notices = notices.reverse();
 
-        const titles = reverse_notices.filter(notice => notice.title.toUpperCase().includes(focused_option.toUpperCase())).slice(0, 25);
+        // Split the user's input into individual keywords
+        const keywords = focused_option.split(/\s+/).map(k => k.toUpperCase());
+
+        const titles = reverse_notices.filter(notice => keywords.every(keyword => notice.title.toUpperCase().includes(keyword))).slice(0, 25);
 
         
 
