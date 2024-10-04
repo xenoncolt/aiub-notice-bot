@@ -84,7 +84,7 @@ export default {
                     return;
                 }
 
-                if (!permission.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks])) {
+                if (permission.has([PermissionFlagsBits.ViewChannel, PermissionFlagsBits.ManageChannels, PermissionFlagsBits.ManageRoles])) {
                     await channel.permissionOverwrites.create(client.user!, { SendMessages: true, EmbedLinks: true });
                     await channel.permissionOverwrites.create(channel.guild.roles.everyone, { SendMessages: false });
                 }

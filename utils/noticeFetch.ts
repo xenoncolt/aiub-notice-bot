@@ -117,47 +117,49 @@ export async function fetchNotice(client: Client): Promise<void> {
                             }
 
                             // if (channel && channel instanceof TextChannel) {
-                                const permission = channel.permissionsFor(client.user!);
+                            const permission = channel.permissionsFor(client.user!);
 
-                                // I have to change it later (&& to ||)
-                                if (!permission?.has(PermissionFlagsBits.ViewChannel)) {
-                                    const sql = `DELETE FROM channel WHERE channel_id = ?`;
-                                    try {
-                                        const result = await notice_db.run(sql, [channel_ID]);
+                            // I have to change it later (&& to ||)
+                            if (!permission?.has(PermissionFlagsBits.ViewChannel)) {
+                                const sql = `DELETE FROM channel WHERE channel_id = ?`;
+                                try {
+                                    const result = await notice_db.run(sql, [channel_ID]);
     
-                                        // The result object contains the 'changes' property, which is the number of row affected
-                                        if (result.changes! > 0) {
-                                            console.log(`Row(s) deleted: ${result.changes}`);
-                                        } else {
-                                            console.log(`No row(s) deleted for channel ID: ${channel_ID}`);
-                                        }
-                                    } catch (error) {
-                                        console.error(`Error deleting channel with ID ${channel_ID}: `, (error as Error).message);
+                                    // The result object contains the 'changes' property, which is the number of row affected
+                                    if (result.changes! > 0) {
+                                        console.log(`Row(s) deleted: ${result.changes}`);
+                                    } else {
+                                        console.log(`No row(s) deleted for channel ID: ${channel_ID}`);
                                     }
-                                    continue;
+                                } catch (error) {
+                                    console.error(`Error deleting channel with ID ${channel_ID}: `, (error as Error).message);
                                 }
+                                continue;
+                            }
 
-                                if (permission.has(PermissionFlagsBits.ManageRoles)) {
-                                    if (!permission?.has(PermissionFlagsBits.SendMessages) || !permission.has(PermissionFlagsBits.EmbedLinks)) {
-                                        await channel.permissionOverwrites.create(client.user!, { SendMessages: true, EmbedLinks: true });
-                                        await channel.permissionOverwrites.create(channel.guild.roles.everyone, { SendMessages: false });
-                                    }
-                                } else if (!permission.has(PermissionFlagsBits.ManageRoles)) {
-                                    const warn_guild = client.guilds.cache.get(guild.id);
-                                    if (warn_guild) {
-                                        const bot = warn_guild.members.me;
-                                        if (!bot) return;
-                                        const default_channel = warn_guild.channels.cache.find(
-                                            (channel) =>
-                                                channel.type === ChannelType.GuildText && channel.permissionsFor(bot).has(PermissionFlagsBits.SendMessages)
-                                        );
-
-                                        if (default_channel && default_channel instanceof TextChannel) {
-                                            default_channel.send('I don\'t have permission to manage role in this channel. If you don\'t know how to give me that permission then just invite me again (Click to my profile -> Add App -> Add to server).');
-                                        }
-                                    }
-                                    if (!permission.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks])) continue;
+                            if (permission.has(PermissionFlagsBits.ManageRoles)) {
+                                if (!permission?.has(PermissionFlagsBits.SendMessages) || !permission.has(PermissionFlagsBits.EmbedLinks)) {
+                                    await channel.permissionOverwrites.create(client.user!, { SendMessages: true, EmbedLinks: true });
+                                    await channel.permissionOverwrites.create(channel.guild.roles.everyone, { SendMessages: false });
                                 }
+                            } else if (!permission.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks])) {
+                                const warn_guild = client.guilds.cache.get(guild.id);
+                                if (warn_guild) {                                        
+                                    const bot = warn_guild.members.me;
+                                    if (!bot) return;
+                                    let default_channel = warn_guild.channels.cache.find(
+                                        (target_channel) =>
+                                            target_channel.type === ChannelType.GuildText && target_channel.permissionsFor(bot).has(PermissionFlagsBits.SendMessages)
+                                    );
+
+                                    if(!default_channel) return;
+
+                                    if (default_channel && default_channel instanceof TextChannel) {
+                                        default_channel.send(`I don\'t have permission to Send Message or Embed Link or Manage Role to <#${channel_ID}> channel. As a result I can't send new notice.  If you don\'t know how to give me that permission then just invite me again (Click to my profile -> Add App -> Add to server).`);
+                                    }
+                                }
+                                continue;
+                            }
 
                                 
                             // } else  {
