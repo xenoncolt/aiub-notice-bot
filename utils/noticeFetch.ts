@@ -256,7 +256,8 @@ export async function fetchNotice(client: Client): Promise<void> {
                                     )
                                     .setURL(link)
                                     .setColor('Random')
-                                    .setTimestamp();
+                                    .setTimestamp()
+                                    .setFooter({ text: '\'/dm reset\' to stop sending notice' });
 
                                 const link_btn = new ActionRowBuilder<ButtonBuilder>()
                                     .addComponents(
