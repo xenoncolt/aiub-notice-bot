@@ -3,6 +3,7 @@ import { readFileSync } from "fs";
 import { fetchNotice } from "../../utils/noticeFetch.js";
 import package_info from "../../package.json" assert { type: "json" };
 import { execSync } from "child_process";
+import { fetchNewsEvents } from "../../utils/aiubNewsFetch.js";
 
 const commit_count = execSync('git rev-list --count HEAD').toString().trim();
 
@@ -33,5 +34,6 @@ export default {
 
         // fetchNotice
         setInterval(() => fetchNotice(client), 10 * 60 * 1000);
+        setInterval(() => fetchNewsEvents(client), 10 * 60 * 1000);
     }
 }
