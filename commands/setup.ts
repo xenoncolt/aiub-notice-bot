@@ -24,7 +24,7 @@ const channel_db = channelDB();
 
 export default {
     name: 'setup',
-    description: 'Setup or reset a channel',
+    description: 'Setup a channel',
     options: [
         {
             name: 'notice',
@@ -47,18 +47,7 @@ export default {
                 description: 'Select a channel to setup',
                 required: true,
             }]
-        },
-        {
-            name: 'reset',
-            type: 1,
-            description: 'Reset a channel',
-            options: [{
-                name: 'channel',
-                type: 7,
-                description: 'Select a channel to reset',
-                required: true,
-            }],
-        },
+        }
     ],
     async execute(interaction: ChatInputCommandInteraction) {
         try {
@@ -78,7 +67,7 @@ export default {
             const permission = channel.permissionsFor(client.user!);
 
             if (!permission) {
-                await interaction.editReply('I can\'t access this channel\'s permissions.');
+                await interaction.editReply(`I don't have enough permissions to access <#${channel.id}> channel's.`)
                 return;
             }
 
@@ -94,7 +83,7 @@ export default {
                 }
 
                 if (!permission.has([PermissionFlagsBits.ViewChannel, PermissionFlagsBits.ManageRoles])) {
-                    await interaction.editReply(`I don\'t have permission to view or manage role in ${channel.id} channel. If you don\'t know how to give me that permission then just invite me again (Click to my profile -> Add App -> Add to server).`);
+                    await interaction.editReply(`I don\'t have permission to view or manage role in <#${channel.id}> channel. If you don\'t know how to give me that permission then just invite me again (Click to my profile -> Add App -> Add to server).`);
                     return;
                 }
 
@@ -131,14 +120,6 @@ export default {
                 await interaction.editReply('Channel has been set! <:Nice:791390203944239134> Please wait for the next AIUB News & Events.\nPlease review me here. <:crying_praying:791390109839654922> \n[Review](https://top.gg/bot/1123156043711651910#reviews)');
                 await channel.send({ content: `New AIUB News & Events will be post here.\nPlease wait for that.\nDon't delete this channel. Deleting this channel means stop posting AIUB News & Events in this channel.\nDon't change any permission of this channel. Change when you have knowledge about channel management.` });
                 
-            } else if (sub_cmd === 'reset') {
-                if (!member.permissions.has([PermissionFlagsBits.Administrator, PermissionFlagsBits.ManageChannels])) {
-                    await interaction.editReply("You don\'t have enough permission to setup notice channel.");
-                    return;
-                }
-
-                await db.run('DELETE FROM channel WHERE guild_id = ? AND channel_id = ?', [guild_id, channel.id]);
-                await interaction.editReply('Channel has been reset! <:ThumbsUP:806052736089063434>\nYou can add again by using \`/setup notice\`');
             }
         } catch (error) {
             console.error('Something went wrong: ', error);

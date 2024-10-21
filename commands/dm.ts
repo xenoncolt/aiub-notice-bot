@@ -117,7 +117,7 @@ export default {
                     await interaction.editReply(`You haven't set up **${type}** notifications yet.`);
                 } else {
                     await resetDM(type as string, user_id);
-                    await interaction.editReply(`You have been unsubscribed from **${type}** notifications.`);
+                    await interaction.editReply(`<:ThumbsUP:806052736089063434>You have been unsubscribed from **${type}** notifications.`);
                 }
             }
         } catch (error) {
