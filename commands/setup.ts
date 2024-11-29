@@ -2,7 +2,7 @@ import sqlite3 from "sqlite3";
 import { Database, open } from "sqlite";
 import { ChatInputCommandInteraction, Client, GuildMember, NewsChannel, PermissionFlagsBits, TextChannel } from "discord.js";
 import { Command } from "../types/Command";
-import { channelDB } from "../schema/aiubNews";
+import { channelDB } from "../schema/aiubNews.js";
 
 let db: Database;
 (async () => {

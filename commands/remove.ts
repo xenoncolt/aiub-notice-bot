@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, Client, GuildMember, NewsChannel, PermissionFlagsBits, TextChannel } from "discord.js";
 import { Database, open } from "sqlite";
 import sqlite3 from "sqlite3";
-import { channelDB } from "../schema/aiubNews";
+import { channelDB } from "../schema/aiubNews.js";
 import { Command } from "../types/Command";
 
 let db: Database;
