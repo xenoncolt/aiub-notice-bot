@@ -92,6 +92,11 @@ export default {
                     await channel.permissionOverwrites.create(channel.guild.roles.everyone, { SendMessages: false });
                 }
 
+                if ((await checkIfChannelExists('channel', channel.id))) {
+                    await interaction.editReply(`You **already** set up <#${channel.id}> for notifications.`);
+                    return;
+                }
+
                 await db.run('INSERT OR IGNORE INTO channel (guild_id, channel_id) VALUES (?, ?)', [guild_id, channel.id]);
                 await interaction.editReply('Channel has been set! <:Nice:791390203944239134> Please wait for the next notice.\nPlease review me here. <:crying_praying:791390109839654922> \n[Review](https://top.gg/bot/1123156043711651910#reviews)');
                 await channel.send({ content: `New Notice will be post here.\nPlease wait for that.\nDon't delete this channel. Deleting this channel means stop posting notice in this channel.\nDon't change any permission of this channel. Change when you have knowledge about channel management.` });
@@ -116,6 +121,11 @@ export default {
                     await channel.permissionOverwrites.create(channel.guild.roles.everyone, { SendMessages: false });
                 }
 
+                if ((await checkIfChannelExists('aiubNewsChannel', channel.id))) {
+                    await interaction.editReply(`You **already** set up <#${channel.id}> for notifications.`);
+                    return;
+                }
+
                 (await channel_db).run('INSERT OR IGNORE INTO aiubNewsChannel (guild_id, channel_id) VALUES (?, ?)', guild_id, channel.id);
                 await interaction.editReply('Channel has been set! <:Nice:791390203944239134> Please wait for the next AIUB News & Events.\nPlease review me here. <:crying_praying:791390109839654922> \n[Review](https://top.gg/bot/1123156043711651910#reviews)');
                 await channel.send({ content: `New AIUB News & Events will be post here.\nPlease wait for that.\nDon't delete this channel. Deleting this channel means stop posting AIUB News & Events in this channel.\nDon't change any permission of this channel. Change when you have knowledge about channel management.` });
@@ -126,3 +136,14 @@ export default {
         }
     }
 } as Command;
+
+async function checkIfChannelExists(table: string, channel_id: string): Promise<boolean> {
+    if (table === 'channel') {
+        const exists = await db.get(`SELECT 1 FROM ${table} WHERE channel_id = ?`, [channel_id]);
+        return exists ? true : false;
+    } else if (table === 'aiubNewsChannel') {
+        const exists = await (await channel_db).get(`SELECT 1 FROM ${table} WHERE channel_id = ?`, [channel_id]);
+        return exists ? true : false;
+    }
+    return false;
+}
