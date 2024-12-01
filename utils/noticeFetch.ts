@@ -331,9 +331,9 @@ export async function downloadPDF(url: string): Promise<string> {
 export async function convertPDFToImages(pdf_path: string): Promise<string[] | string> {
     try {
         const output_dir = path.dirname(pdf_path);
-        const pdf_buffer = readFileSync(pdf_path);
+        // const pdf_buffer = readFileSync(pdf_path);
 
-        const images = await pdfToPng(pdf_buffer, {
+        const images = await pdfToPng(pdf_path, {
             disableFontFace: true,
             useSystemFonts: false,
             viewportScale: 3.0
