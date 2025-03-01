@@ -8,6 +8,7 @@ import { readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { pdfToPng } from "pdf-to-png-converter";
 import { fileURLToPath } from "url";
+import { readdir, unlink, writeFile } from "fs/promises";
 
 // Database for notice channel only
 let notice_db: Database;
@@ -30,6 +31,18 @@ open({
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Seat Plan Dir
+const seat_plan_dir = path.join(__dirname, '../database/seatplanPDF');
+
+// Clear old files
+async function clearDir(dir: string): Promise<void> {
+    try {
+        const files = await readdir(dir);
+        await Promise.all(files.map(file => unlink(path.join(dir, file))));
+    } catch (error) {
+        console.error(`Error clearing directory ${dir}: `, error);
+    }
+}
 
 export async function fetchNotice(client: Client): Promise<void> {
     try {
@@ -87,6 +100,27 @@ export async function fetchNotice(client: Client): Promise<void> {
                 };
 
                 new_notices.push(new_notice);
+
+                // Save seat plan pdf
+                if (title.includes("Seat Plan") && title.includes("Exam")) {
+                    console.log(`Found a seat plan notice: ${title}`);
+
+                    await clearDir(seat_plan_dir);
+                    for(const pdf of pdf_options) {
+                        const pdf_url = `${config.url}${pdf.value}`;
+                        try {
+                            const pdf_response = await fetch(pdf_url);
+                            if (!pdf_response.ok) throw new Error(`Failed to fetch PDF from ${pdf_url}`);
+
+                            const pdf_buffer = await pdf_response.arrayBuffer();
+                            const pdf_path = path.join(seat_plan_dir, path.basename(pdf.value));
+                            await writeFile(pdf_path, Buffer.from(pdf_buffer));
+                            console.log(`Downloaded PDF: ${pdf_path}`);
+                        } catch (e) {
+                            console.error(`Failed to save PDF "${pdf.label}" from ${pdf_url}: `, e);
+                        }
+                    }
+                }
 
                 for (const guild of client.guilds.cache.values()) {
                     // Fetch channel ID from database
