@@ -3,7 +3,7 @@ import sqlite3 from "sqlite3";
 import { Database, open } from "sqlite";
 import { JSDOM } from "jsdom";
 import fetch from "node-fetch";
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 import { readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { pdfToPng } from "pdf-to-png-converter";

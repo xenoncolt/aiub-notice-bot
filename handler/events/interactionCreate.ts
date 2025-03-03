@@ -1,6 +1,6 @@
 import { AttachmentBuilder, Events, Interaction } from "discord.js";
 import { ExtendedClient } from "../../types/ExtendedClient.js";
-import config from "../../config.json" assert { type: "json" };
+import config from "../../config.json" with { type: "json" };
 import { convertPDFToImages, downloadPDF } from "../../utils/noticeFetch.js";
 import { unlinkSync } from "fs";
 

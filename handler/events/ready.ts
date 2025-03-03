@@ -1,7 +1,7 @@
 import { Client, Events } from "discord.js";
 import { readFileSync } from "fs";
 import { fetchNotice } from "../../utils/noticeFetch.js";
-import package_info from "../../package.json" assert { type: "json" };
+import package_info from "../../package.json" with { type: "json" };
 import { execSync } from "child_process";
 import { fetchNewsEvents } from "../../utils/aiubNewsFetch.js";
 

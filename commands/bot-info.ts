@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, Client, EmbedBuilder } from "discord.js";
 import os from "os";
 import { currentLoad } from "systeminformation";
-import config from "../package.json" assert { type: "json" };
+import config from "../package.json" with { type: "json" };
 import { Command } from "../types/Command.js";
 
 const start_time = Date.now();

@@ -1,6 +1,6 @@
 import { ActionRowBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Client, EmbedBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
-import notices from "../database/notice.json" assert { type: "json" };
-import config from "../config.json" assert { type: "json" };
+import notices from "../database/notice.json" with { type: "json" };
+import config from "../config.json" with { type: "json" };
 import { Command } from "../types/Command";
 
 export default {

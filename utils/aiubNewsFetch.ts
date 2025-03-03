@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, Client, DiscordAPIError, EmbedBuilder, NewsChannel, PermissionFlagsBits, TextChannel } from "discord.js";
 import { JSDOM } from "jsdom";
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 import { Database, open } from "sqlite";
 import sqlite3 from "sqlite3";
 import { channelDB, newsEventsDB } from "../schema/aiubNews.js";
