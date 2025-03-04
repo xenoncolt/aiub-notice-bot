@@ -47,11 +47,13 @@ export default {
             let profile: FacultyProfile | undefined;
 
             if (name) {
-                profile = profile_list.find(profile => profile.CvPersonal.Name.toUpperCase() === name.toUpperCase());
+                profile = profile_list.find(profile => profile.CvPersonal.Name && profile.CvPersonal.Name.toUpperCase() === name.toUpperCase());
+                console.log(profile);
             }
 
             if (!profile && email) {
-                profile = profile_list.find(profile => profile.CvPersonal.Email.toLowerCase() === email.toLowerCase());
+                profile = profile_list.find(profile => profile.CvPersonal.Email && profile.CvPersonal.Email.toLowerCase() === email.toLowerCase());
+                console.log(profile);
             }
 
             if (profile) {
@@ -81,12 +83,15 @@ export default {
         let filtered_profiles: FacultyProfile[] = [];
 
         if (focused_option.name === 'name') {
-            const focused_value = focused_option.value.toUpperCase();
-            filtered_profiles = profile_list.filter(profile => profile.CvPersonal.Name.toUpperCase().includes(focused_value));
+            const focused_value = focused_option.value.trim().toUpperCase();
+            filtered_profiles = profile_list.filter(profile => {
+                const name = profile.CvPersonal.Name; 
+                return name && name.trim().toUpperCase().includes(focused_value);
+            });
         }
 
         if (focused_option.name === 'email') {
-            const focused_value = focused_option.value.toLowerCase();
+            const focused_value = focused_option.value.trim().toLowerCase();
             filtered_profiles = profile_list.filter(profile => {
                 const email = profile.CvPersonal.Email; 
                 return email && email.startsWith(focused_value);
