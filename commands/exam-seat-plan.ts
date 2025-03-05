@@ -55,18 +55,18 @@ export default {
                             inline: true
                         },
                         {
-                            name: '🔢 Serial No.',
-                            value: student_details.sl.toString(),
+                            name: '🚪 Room No.',
+                            value: student_details.room.toString(),
                             inline: false
                         },
                         {
-                            name: '🚪 Room No.',
-                            value: student_details.room.toString(),
-                            inline: true
-                        }, 
-                        {
                             name: '📋 Column No.',
                             value: student_details.column.toString(),
+                            inline: true
+                        },
+                        {
+                            name: '🔢 Serial No.',
+                            value: student_details.sl.toString(),
                             inline: true
                         }
                     )
@@ -113,7 +113,7 @@ async function processPDFs(student_id: string): Promise<SeatPlan | null> {
                     // writeFileSync(output_file_path, data.text, 'utf-8');
                     const text = data.text;
                     if (text.includes(student_id)) {
-                        console.log(`Student ID: ${student_id} found in file: ${file}`);
+                        // console.log(`Student ID: ${student_id} found in file: ${file}`);
                         const lines = text.split('\n');
                         for (let i = 0; i < lines.length; i++) {
                             if (lines[i].includes(student_id)) {
@@ -121,14 +121,14 @@ async function processPDFs(student_id: string): Promise<SeatPlan | null> {
 
                                 if (tokens.length < 4) continue;
 
-                                const sl = Number(tokens[0]);
+                                const sl = Number(tokens[0]) % 8;
                                 const department = String(tokens[tokens.length - 1]);
                                 const name = tokens.slice(2, tokens.length - 1).join(' ');
 
                                 const next_tokens = lines[i + 1].trim().split(/\s+/);
                                 const room = next_tokens[0];
                                 const column = Number(next_tokens[1]);
-                                console.log({ name, department, sl, room, column });
+                                // console.log({ name, department, sl, room, column });
                                 
                                 return { name, department, sl, room, column };
                             }
