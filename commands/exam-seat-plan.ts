@@ -1,18 +1,17 @@
-import { ChatInputCommandInteraction, Client, EmbedBuilder } from 'discord.js';
-import { readFile, readdir } from 'fs/promises';
-import path, { basename, join } from 'path';
+import { ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
+import { readdir } from 'fs/promises';
+import path from 'path';
 import { Command } from '../types/Command';
 import { fileURLToPath } from 'url';
 import PdfParse, {  } from "pdf-parse-new";
 import { SeatPlan } from "../types/SeatPlan";
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const seat_plan_dir = path.join(__dirname, '../database/seatplanPDF');
 
-const REQUIRED_COLUMNS = ['sl', 'student id', 'student name', 'department', 'room no', 'column no'];
 
 export default {
     name: 'exam-seat-plan',
