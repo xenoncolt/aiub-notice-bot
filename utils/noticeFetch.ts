@@ -61,7 +61,7 @@ export async function fetchNotice(client: Client): Promise<void> {
 
         for (let i = 0; i < notices.length; i++) {
             const notice = notices[i];
-            const title = notice.querySelector('.title')?.textContent?.trim() || "";
+             const short_title = notice.querySelector('.title')?.textContent?.trim() || "";
             const desc = notice.querySelector('.desc')?.textContent?.trim() || "";
             const link_info = notice.querySelector('.info-link')?.getAttribute('href') || "";
 
@@ -70,19 +70,22 @@ export async function fetchNotice(client: Client): Promise<void> {
             // const month = timeElement?.querySelector('.month')?.textContent || "";
             // const year = timeElement?.querySelector('.year')?.textContent || "";
 
-            const day = notice.querySelector('.date-custom')?.childNodes[0]?.textContent?.trim() || "";
-            const month = notice.querySelector('.date-custom span:nth-child(1)')?.textContent?.trim() || "";
-            const year = notice.querySelector('.date-custom span:nth-child(2)')?.textContent?.trim() || "";
+            const day_month_text = notice.querySelector('.date-custom')?.childNodes[0]?.textContent?.trim() || "";
+            const [day, month] = day_month_text.split("\n").map(s => s.trim()); 
+            const year = notice.querySelector('.date-custom span:nth-child(1)')?.textContent?.trim() || "";
 
             const link = `${config.url}${link_info}`;
 
-            const existing_notice: boolean = notice_object.find((n: any) => n.title === title);
+            const existing_notice: boolean = notice_object.find((n: any) => n.link_info === link_info);
 
             if (!existing_notice) {
                 const notice_response = await fetch(link);
                 const notice_text = await notice_response.text();
                 const notice_dom = new JSDOM(notice_text);
                 const notice_doc = notice_dom.window.document;
+
+                const title = notice_doc.querySelector('#dynamicHeading')?.textContent?.trim() || short_title;
+
                 const pdf_links = notice_doc.querySelectorAll('a[href$=".pdf"]');
 
                 let pdf_options: {label: string, description: string, value: string}[] = [];
