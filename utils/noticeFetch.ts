@@ -51,7 +51,7 @@ export async function fetchNotice(client: Client): Promise<void> {
         const dom = new JSDOM(text);
         const document = dom.window.document;
 
-        const notices = document.querySelectorAll('.event-list li .info');
+        const notices = document.querySelectorAll('.notification');
         let notice_data = readFileSync('./database/notice.json', 'utf-8');
         let notice_object = JSON.parse(notice_data) || [];
 
@@ -61,13 +61,18 @@ export async function fetchNotice(client: Client): Promise<void> {
 
         for (let i = 0; i < notices.length; i++) {
             const notice = notices[i];
-            const title = notice.querySelector('.title')?.textContent || "";
-            const desc = notice.querySelector('.desc')?.textContent || "";
+            const title = notice.querySelector('.title')?.textContent?.trim() || "";
+            const desc = notice.querySelector('.desc')?.textContent?.trim() || "";
             const link_info = notice.querySelector('.info-link')?.getAttribute('href') || "";
-            const timeElement = notice.parentElement?.querySelector('time');
-            const day = timeElement?.querySelector('.day')?.textContent || "";
-            const month = timeElement?.querySelector('.month')?.textContent || "";
-            const year = timeElement?.querySelector('.year')?.textContent || "";
+
+            // const timeElement = notice.parentElement?.querySelector('time');
+            // const day = timeElement?.querySelector('.day')?.textContent || "";
+            // const month = timeElement?.querySelector('.month')?.textContent || "";
+            // const year = timeElement?.querySelector('.year')?.textContent || "";
+
+            const day = notice.querySelector('.date-custom')?.childNodes[0]?.textContent?.trim() || "";
+            const month = notice.querySelector('.date-custom span:nth-child(1)')?.textContent?.trim() || "";
+            const year = notice.querySelector('.date-custom span:nth-child(2)')?.textContent?.trim() || "";
 
             const link = `${config.url}${link_info}`;
 
