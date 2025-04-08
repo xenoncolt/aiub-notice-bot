@@ -104,7 +104,7 @@ export default {
                 }
 
                 if (!(canSendDM(interaction.user, type))) {
-                    await interaction.editReply(`I can't send you direct message. Please make sure you \`Add App\` as a user(\`Try it Now\`).\nIf you don't know how then click me and you will see a \`Add App\` button. Click that button and select \`Try it Now\` and then click \`Authorize\`.\nIf you still face problem then contact with me father [website](https://xenoncolt.me)`);
+                    await interaction.editReply(`I can't send you direct message. Please make sure you \`Add App\` as a user(\`Try it Now\`).\nIf you don't know how then click me and you will see a \`Add App\` button. Click that button and select \`Try it Now\` and then click \`Authorize\`.\nIf you still face problem then contact [here website](https://xenoncolt.me)`);
                     return;
                 }
 
