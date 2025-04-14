@@ -9,6 +9,7 @@ import path from "path";
 import { pdfToPng } from "pdf-to-png-converter";
 import { fileURLToPath } from "url";
 import { readdir, unlink, writeFile } from "fs/promises";
+import { convertSeatPlanPDFsToJson } from "./processSeatPlan";
 
 // Database for notice channel only
 let notice_db: Database;
@@ -124,6 +125,7 @@ export async function fetchNotice(client: Client): Promise<void> {
                             const pdf_path = path.join(seat_plan_dir, path.basename(pdf.value));
                             await writeFile(pdf_path, Buffer.from(pdf_buffer));
                             console.log(`Downloaded PDF: ${pdf_path}`);
+                            convertSeatPlanPDFsToJson();
                         } catch (e) {
                             console.error(`Failed to save PDF "${pdf.label}" from ${pdf_url}: `, e);
                         }
