@@ -42,7 +42,7 @@ export default {
                         { name: 'Published Date:', value: `${latest_notice.day} ${latest_notice.month} ${latest_notice.year}` }
                     )
                     .setColor('Random')
-                    .setURL(config.url+latest_notice.link)
+                    .setURL(config.url+latest_notice.link_info)
                     .setTimestamp();
 
                 const link_btn = new ActionRowBuilder<ButtonBuilder>()
@@ -50,7 +50,7 @@ export default {
                         new ButtonBuilder()
                             .setLabel('Details')
                             .setStyle(ButtonStyle.Link)
-                            .setURL(config.url+latest_notice.link)
+                            .setURL(config.url+latest_notice.link_info)
                     );
 
                 await interaction.reply({ embeds: [embed], components: [link_btn] });

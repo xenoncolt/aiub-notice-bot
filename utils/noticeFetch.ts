@@ -9,7 +9,7 @@ import path from "path";
 import { pdfToPng } from "pdf-to-png-converter";
 import { fileURLToPath } from "url";
 import { readdir, unlink, writeFile } from "fs/promises";
-import { convertSeatPlanPDFsToJson } from "./processSeatPlan";
+import { convertSeatPlanPDFsToJson } from "./processSeatPlan.js";
 
 // Database for notice channel only
 let notice_db: Database;

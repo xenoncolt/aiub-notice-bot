@@ -31,7 +31,7 @@ export async function convertSeatPlanPDFsToJson(): Promise<void> {
                 const data = await PdfParse(file_buffer);
                 const text = data.text;
                 const lines = text.split('\n');
-                console.log("First 5 lines:", lines.slice(0, 5));
+                // console.log("First 5 lines:", lines.slice(0, 5));
                 for (let i = 0; i < lines.length; i++) {
                     const match = lines[i].match(id_pattern);
                     if (match) {
