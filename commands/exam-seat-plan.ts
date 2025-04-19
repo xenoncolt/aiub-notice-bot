@@ -12,7 +12,6 @@ const __dirname = dirname(__filename);
 
 const seat_plan_dir = join(__dirname, '../database/seatplanPDF');
 const seat_plan_path = join(__dirname, '../database/seat-plan.json');
-const seat_plan: SeatPlan[] = JSON.parse(readFileSync(seat_plan_path, 'utf-8'));
 
 
 export default {
@@ -35,6 +34,8 @@ export default {
         if (!student_id) return;
 
         try {
+
+            const seat_plan: SeatPlan[] = JSON.parse(readFileSync(seat_plan_path, 'utf-8'));
 
             // await processPDFs(student_id);
             // await interaction.reply({ content: 'Success', ephemeral: true});
@@ -90,6 +91,8 @@ export default {
 
     async autocomplete(interaction: AutocompleteInteraction) {
         const focused_value = interaction.options.getFocused();
+
+        const seat_plan: SeatPlan[] = JSON.parse(readFileSync(seat_plan_path, 'utf-8'));
 
         const student: SeatPlan[] = seat_plan.filter(student => student.id.startsWith(focused_value));
         await interaction.respond(
