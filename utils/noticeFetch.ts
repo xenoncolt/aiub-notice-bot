@@ -77,16 +77,16 @@ export async function fetchNotice(client: Client): Promise<void> {
 
             const link = `${config.url}${link_info}`;
 
-            const existing_notice: boolean = notice_object.find((n: any) => n.link_info === link_info);
+            const notice_response = await fetch(link);
+            const notice_text = await notice_response.text();
+            const notice_dom = new JSDOM(notice_text);
+            const notice_doc = notice_dom.window.document;
+
+            const title = notice_doc.querySelector('#dynamicHeading')?.textContent?.trim() || short_title;
+
+            const existing_notice: boolean = notice_object.find((n: any) => n.link_info === link_info && n.title === title);
 
             if (!existing_notice) {
-                const notice_response = await fetch(link);
-                const notice_text = await notice_response.text();
-                const notice_dom = new JSDOM(notice_text);
-                const notice_doc = notice_dom.window.document;
-
-                const title = notice_doc.querySelector('#dynamicHeading')?.textContent?.trim() || short_title;
-
                 const pdf_links = notice_doc.querySelectorAll('a[href$=".pdf"]');
 
                 let pdf_options: {label: string, description: string, value: string}[] = [];
