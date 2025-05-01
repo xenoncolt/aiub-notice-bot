@@ -86,6 +86,19 @@ export async function fetchNotice(client: Client): Promise<void> {
 
             const existing_notice: boolean = notice_object.find((n: any) => n.link_info === link_info && n.title === title);
 
+            let full_desc = undefined;
+
+            const isContentDiv = notice_doc.querySelector('.question-column:not(.notice-sticky-header)'); 
+            if (isContentDiv) {
+                const textDescContent = isContentDiv.textContent?.trim();
+
+                if (textDescContent!.length > 100 && textDescContent!.length < 4096) {
+                    full_desc = textDescContent;
+                } else if (textDescContent!.length > 4096) {
+                    full_desc = textDescContent!.slice(0, 4090) + '...';
+                }
+            }
+
             if (!existing_notice) {
                 const pdf_links = notice_doc.querySelectorAll('a[href$=".pdf"]');
 
@@ -101,6 +114,7 @@ export async function fetchNotice(client: Client): Promise<void> {
                 const new_notice = {
                     title,
                     desc,
+                    full_desc,
                     link_info,
                     day,
                     month,
@@ -226,13 +240,15 @@ export async function fetchNotice(client: Client): Promise<void> {
                             if (channel && (channel instanceof TextChannel || channel instanceof NewsChannel)) {
                                 const embed = new EmbedBuilder()
                                     .setTitle(title)
-                                    .setDescription(desc)
+                                    .setDescription(full_desc || desc)
                                     .setColor("Random")
                                     .addFields(
-                                        { name: 'Published Date: ', value: `${day} ${month} ${year}`}
+                                        { name: 'Published Date: ', value: `${day} ${month} ${year}`},
+                                        { name: `Note`, value: `Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY) before doing something.`}
                                     )
                                     .setURL(link)
-                                    .setTimestamp();
+                                    .setTimestamp()
+                                    .setFooter({ text: `Remember, this bot is not a replacement for official announcements. Always verify information from official sources.`});
 
                                 const link_btn = new ActionRowBuilder<ButtonBuilder>()
                                     .addComponents(
@@ -294,14 +310,15 @@ export async function fetchNotice(client: Client): Promise<void> {
                             if (dm_channel.isSendable()) {
                                 const embed = new EmbedBuilder()
                                     .setTitle(title)
-                                    .setDescription(desc)
+                                    .setDescription(full_desc || desc)
                                     .addFields(
-                                        { name: 'Published Date:', value: `${day} ${month} ${year}`}
+                                        { name: 'Published Date:', value: `${day} ${month} ${year}`},
+                                        { name: `Note`, value: `Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY) before doing something.`}
                                     )
                                     .setURL(link)
                                     .setColor('Random')
                                     .setTimestamp()
-                                    .setFooter({ text: '\'/dm reset\' to stop sending notice' });
+                                    .setFooter({ text: '\'/dm reset\' to stop sending notice | Remember, this bot is not a replacement for official announcements. Always verify information from official sources.' });
 
                                 const link_btn = new ActionRowBuilder<ButtonBuilder>()
                                     .addComponents(

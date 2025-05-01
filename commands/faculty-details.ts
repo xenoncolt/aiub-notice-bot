@@ -127,7 +127,8 @@ async function getFacultyDetails(profile: FacultyProfile, client: Client) {
                 { name: 'Position:', value: profile.Position || 'Unavailable', inline: false },
                 { name: 'Building:', value: profile.PersonalOtherInfo.BuildingNo || 'Unavailable, Check D-Building Notice Board', inline: true },
                 { name: 'Room No:', value: profile.PersonalOtherInfo.RoomNo || 'Unavailable, Check D-Building Notice Board', inline: true }
-            );
+            )
+            .setFooter({ text: "Sometimes the data may not be accurate or up to date due to the nature of the source." });
 
         return embed;
     } catch (error) {
