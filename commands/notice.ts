@@ -32,7 +32,7 @@ export default {
 
             const embed = new EmbedBuilder()
                 .setTitle(notice?.title as string)
-                .setDescription(notice?.desc as string)
+                .setDescription(notice?.full_desc ||notice?.desc as string)
                 .setColor('Random')
                 .addFields(
                     {
@@ -42,6 +42,12 @@ export default {
                 )
                 .setURL(link_url as string)
                 .setTimestamp();
+
+                if (notice?.img_urls?.length as number > 0) {
+                    for (const img_url of notice!.img_urls!) {
+                        embed.setImage(img_url);
+                    }
+                }
 
             const link_btn = new ActionRowBuilder<ButtonBuilder>()
                 .addComponents(

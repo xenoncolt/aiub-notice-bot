@@ -6,9 +6,8 @@ import path, { resolve } from "path";
 import { createWriteStream, mkdirSync } from "fs";
 import { Command } from "../types/Command";
 import { fileURLToPath } from "url";
+import { downloadImage } from "../helper/downloadImage.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export default {
     name: 'faculty-details',
@@ -136,24 +135,24 @@ async function getFacultyDetails(profile: FacultyProfile, client: Client) {
     }
 }
 
-async function downloadImage(url: string): Promise<string> {
-    const dir = path.join(__dirname, '../download');
+// async function downloadImage(url: string): Promise<string> {
+//     const dir = path.join(__dirname, '../download');
 
-    mkdirSync(dir, { recursive: true });
+//     mkdirSync(dir, { recursive: true });
 
-    const image_path = path.join(dir, 'temp.jpg');
-    const writer = createWriteStream(image_path);
+//     const image_path = path.join(dir, 'temp.jpg');
+//     const writer = createWriteStream(image_path);
 
-    const response = await axios({
-        url,
-        method: 'GET',
-        responseType: 'stream'
-    });
+//     const response = await axios({
+//         url,
+//         method: 'GET',
+//         responseType: 'stream'
+//     });
 
-    response.data.pipe(writer);
+//     response.data.pipe(writer);
 
-    return new Promise((resolve, reject) => {
-        writer.on('finish', () => resolve(image_path));
-        writer.on('error', reject);
-    });
-}
+//     return new Promise((resolve, reject) => {
+//         writer.on('finish', () => resolve(image_path));
+//         writer.on('error', reject);
+//     });
+// }

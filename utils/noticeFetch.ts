@@ -1,4 +1,4 @@
-import { ActionRowBuilder, Client, PermissionFlagsBits, StringSelectMenuBuilder, TextChannel, EmbedBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuOptionBuilder, DiscordAPIError, NewsChannel, ChannelType } from "discord.js";
+import { ActionRowBuilder, Client, PermissionFlagsBits, StringSelectMenuBuilder, TextChannel, EmbedBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuOptionBuilder, DiscordAPIError, NewsChannel, ChannelType, AttachmentBuilder } from "discord.js";
 import sqlite3 from "sqlite3";
 import { Database, open } from "sqlite";
 import { JSDOM } from "jsdom";
@@ -10,6 +10,8 @@ import { pdfToPng } from "pdf-to-png-converter";
 import { fileURLToPath } from "url";
 import { readdir, unlink, writeFile } from "fs/promises";
 import { convertSeatPlanPDFsToJson } from "./processSeatPlan.js";
+import { htmlToDiscordFormat } from "../helper/htmlToDiscordFormat.js";
+import { downloadImage } from "../helper/downloadImage.js";
 
 // Database for notice channel only
 let notice_db: Database;
@@ -87,10 +89,28 @@ export async function fetchNotice(client: Client): Promise<void> {
             const existing_notice: boolean = notice_object.find((n: any) => n.link_info === link_info && n.title === title);
 
             let full_desc = undefined;
+            let img_urls: string[] = [];
 
             const isContentDiv = notice_doc.querySelector('.question-column:not(.notice-sticky-header)'); 
             if (isContentDiv) {
-                const textDescContent = isContentDiv.textContent?.trim();
+                // const textDescContent = isContentDiv.textContent?.trim();
+                const textDescHtml = isContentDiv.innerHTML;
+                const { content: textDescContent, imageUrls } = htmlToDiscordFormat(textDescHtml);
+
+                let imgPaths: string[] = [];
+                
+                for (const imgUrl of imageUrls) {
+                    const img_path = await downloadImage(imgUrl);
+                    imgPaths.push(img_path);
+                }
+
+                const _channel = client.channels.cache.get("1244675616306102402") as TextChannel;
+
+                for (const imgPath of imgPaths) {
+                    const attachment = new AttachmentBuilder(imgPath);
+                    const sent_msg = await _channel.send({ files: [attachment] });
+                    img_urls.push(sent_msg.attachments.first()!.url);
+                }
 
                 if (textDescContent!.length > 100 && textDescContent!.length < 4096) {
                     full_desc = textDescContent;
@@ -116,6 +136,7 @@ export async function fetchNotice(client: Client): Promise<void> {
                     desc,
                     full_desc,
                     link_info,
+                    img_urls,
                     day,
                     month,
                     year,
@@ -244,11 +265,17 @@ export async function fetchNotice(client: Client): Promise<void> {
                                     .setColor("Random")
                                     .addFields(
                                         { name: 'Published Date: ', value: `${day} ${month} ${year}`},
-                                        { name: `Note`, value: `Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY) before doing something.`}
+                                        { name: `Note from Bot`, value: `Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY). Always verify information from official [sources](https://www.aiub.edu/category/notices)`}
                                     )
                                     .setURL(link)
                                     .setTimestamp()
-                                    .setFooter({ text: `Remember, this bot is not a replacement for official announcements. Always verify information from official sources.`});
+                                    .setFooter({ text: `Remember, this bot is not a replacement for official announcements.`});
+
+                                if (img_urls.length > 0) {
+                                    for (const img_url of img_urls) {
+                                        embed.setImage(img_url);
+                                    }
+                                }
 
                                 const link_btn = new ActionRowBuilder<ButtonBuilder>()
                                     .addComponents(
@@ -313,12 +340,18 @@ export async function fetchNotice(client: Client): Promise<void> {
                                     .setDescription(full_desc || desc)
                                     .addFields(
                                         { name: 'Published Date:', value: `${day} ${month} ${year}`},
-                                        { name: `Note`, value: `Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY) before doing something.`}
+                                        { name: `Note from Bot`, value: `Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY). Always verify information from official [sources](https://www.aiub.edu/category/notices)`}
                                     )
                                     .setURL(link)
                                     .setColor('Random')
                                     .setTimestamp()
-                                    .setFooter({ text: '\'/dm reset\' to stop sending notice | Remember, this bot is not a replacement for official announcements. Always verify information from official sources.' });
+                                    .setFooter({ text: '\'/dm reset\' to stop sending notice | Remember, this bot is not a replacement for official announcements.' });
+
+                                if (img_urls.length > 0) {
+                                    for (const img_url of img_urls) {
+                                        embed.setImage(img_url);
+                                    }
+                                }
 
                                 const link_btn = new ActionRowBuilder<ButtonBuilder>()
                                     .addComponents(

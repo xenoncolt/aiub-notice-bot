@@ -37,15 +37,21 @@ export default {
             if (text === 'notice') {
                 const embed = new EmbedBuilder()
                     .setTitle(latest_notice.title)
-                    .setDescription(latest_notice.desc)
+                    .setDescription(latest_notice.full_desc || latest_notice.desc)
                     .addFields(
                         { name: 'Published Date:', value: `${latest_notice.day} ${latest_notice.month} ${latest_notice.year}` },
-                        { name: `Note`, value: `Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY) before doing something.`}
+                        { name: `Note`, value: `Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY). Always verify information from official [sources](https://www.aiub.edu/category/notices)`}
                     )
                     .setColor('Random')
                     .setURL(config.url+latest_notice.link_info)
-                    .setFooter({ text: 'Remember, this bot is not a replacement for official announcements. Always verify information from official sources.' })
+                    .setFooter({ text: 'Remember, this bot is not a replacement for official announcements.' })
                     .setTimestamp();
+
+                if (latest_notice.img_urls.length > 0) {
+                    for (const img_url of latest_notice.img_urls) {
+                        embed.setImage(img_url);
+                    }
+                }
 
                 const link_btn = new ActionRowBuilder<ButtonBuilder>()
                     .addComponents(
