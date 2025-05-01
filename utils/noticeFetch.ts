@@ -92,35 +92,36 @@ export async function fetchNotice(client: Client): Promise<void> {
             let img_urls: string[] = [];
 
             const isContentDiv = notice_doc.querySelector('.question-column:not(.notice-sticky-header)'); 
-            if (isContentDiv) {
-                // const textDescContent = isContentDiv.textContent?.trim();
-                const textDescHtml = isContentDiv.innerHTML;
-                const { content: textDescContent, imageUrls } = htmlToDiscordFormat(textDescHtml);
-
-                let imgPaths: string[] = [];
-                
-                for (const imgUrl of imageUrls) {
-                    const img_path = await downloadImage(imgUrl);
-                    imgPaths.push(img_path);
-                }
-
-                const _channel = client.channels.cache.get("1244675616306102402") as TextChannel;
-
-                for (const imgPath of imgPaths) {
-                    const attachment = new AttachmentBuilder(imgPath);
-                    const sent_msg = await _channel.send({ files: [attachment] });
-                    img_urls.push(sent_msg.attachments.first()!.url);
-                }
-
-                if (textDescContent!.length > 100 && textDescContent!.length < 4096) {
-                    full_desc = textDescContent;
-                } else if (textDescContent!.length > 4096) {
-                    full_desc = textDescContent!.slice(0, 4090) + '...';
-                }
-            }
 
             if (!existing_notice) {
                 const pdf_links = notice_doc.querySelectorAll('a[href$=".pdf"]');
+
+                if (isContentDiv) {
+                    // const textDescContent = isContentDiv.textContent?.trim();
+                    const textDescHtml = isContentDiv.innerHTML;
+                    const { content: textDescContent, imageUrls } = htmlToDiscordFormat(textDescHtml);
+    
+                    let imgPaths: string[] = [];
+                    
+                    for (const imgUrl of imageUrls) {
+                        const img_path = await downloadImage(imgUrl);
+                        imgPaths.push(img_path);
+                    }
+    
+                    const _channel = client.channels.cache.get("1244675616306102402") as TextChannel;
+    
+                    for (const imgPath of imgPaths) {
+                        const attachment = new AttachmentBuilder(imgPath);
+                        const sent_msg = await _channel.send({ files: [attachment] });
+                        img_urls.push(sent_msg.attachments.first()!.url);
+                    }
+    
+                    if (textDescContent!.length > 100 && textDescContent!.length < 4096) {
+                        full_desc = textDescContent;
+                    } else if (textDescContent!.length > 4096) {
+                        full_desc = textDescContent!.slice(0, 4090) + '...';
+                    }
+                }
 
                 let pdf_options: {label: string, description: string, value: string}[] = [];
                 if (pdf_links.length > 0) {
