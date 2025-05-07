@@ -1,6 +1,6 @@
 import sqlite3 from "sqlite3";
 import { Database, open } from "sqlite";
-import { ChatInputCommandInteraction, Client, GuildMember, NewsChannel, PermissionFlagsBits, TextChannel } from "discord.js";
+import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Client, ContainerBuilder, GuildMember, MediaGalleryBuilder, MediaGalleryComponent, MediaGalleryItemBuilder, MessageFlags, NewsChannel, PermissionFlagsBits, SectionBuilder, TextChannel, TextDisplayBuilder, ThumbnailBuilder } from "discord.js";
 import { Command } from "../types/Command";
 import { channelDB } from "../schema/aiubNews.js";
 
@@ -98,8 +98,45 @@ export default {
                 }
 
                 await db.run('INSERT OR IGNORE INTO channel (guild_id, channel_id) VALUES (?, ?)', [guild_id, channel.id]);
-                await interaction.editReply('Channel has been set! <:Nice:791390203944239134> Please wait for the next notice.\nPlease review me here. <:crying_praying:791390109839654922> \n[Review](https://top.gg/bot/1123156043711651910#reviews)');
-                await channel.send({ content: `New Notice will be post here.\nPlease wait for that.\nDon't delete this channel. Deleting this channel means stop posting notice in this channel.\nDon't change any permission of this channel. Change when you have knowledge about channel management.` });
+
+
+                //  Success section
+                const interactionContainer = new ContainerBuilder();
+                const successInteractionSection = new SectionBuilder().addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent(`### Channel has been set! Please wait for the next notice.`)
+                ).setThumbnailAccessory(
+                    new ThumbnailBuilder().setURL('https://c.tenor.com/KMMqrCPegSUAAAAd/tenor.gif')
+                );
+
+                // Review section
+                const reviewText = new TextDisplayBuilder().setContent(`Don't forget to review me.`);
+                const reviewSection = new SectionBuilder().addTextDisplayComponents(reviewText).setButtonAccessory(
+                    new ButtonBuilder()
+                        .setLabel('Review')
+                        .setStyle(ButtonStyle.Link)
+                        .setURL('https://top.gg/bot/1123156043711651910#reviews')
+                );
+
+
+                interactionContainer.addSectionComponents(successInteractionSection, reviewSection);
+
+
+
+                await interaction.editReply({
+                    flags: MessageFlags.IsComponentsV2,
+                    components: [interactionContainer]
+                });
+                
+                const text = new TextDisplayBuilder().setContent(`New Notice will be post here.\nPlease wait for that.\nDon't delete this channel. Deleting this channel means stop posting notice in this channel.\nDon't change any permission of this channel. Change when you have knowledge about channel management.`)
+                const pepeAsThumbnail = new ThumbnailBuilder().setURL('https://media.tenor.com/Lf2JYGN_5L8AAAAi/pepe.gif');
+                const section = new SectionBuilder().addTextDisplayComponents(text).setThumbnailAccessory(pepeAsThumbnail);
+                const container = new ContainerBuilder().addSectionComponents(section);
+        
+                await channel.send({ 
+                    flags: MessageFlags.IsComponentsV2,
+                    components: [container]
+                });
+
             } else if (sub_cmd === 'news') {
                 if (!member.permissions.has([PermissionFlagsBits.Administrator, PermissionFlagsBits.ManageChannels])) {
                     await interaction.editReply("You don't have enough permission to set up **News & Events** channel.");
@@ -127,9 +164,43 @@ export default {
                 }
 
                 (await channel_db).run('INSERT OR IGNORE INTO aiubNewsChannel (guild_id, channel_id) VALUES (?, ?)', guild_id, channel.id);
-                await interaction.editReply('Channel has been set! <:Nice:791390203944239134> Please wait for the next AIUB News & Events.\nPlease review me here. <:crying_praying:791390109839654922> \n[Review](https://top.gg/bot/1123156043711651910#reviews)');
-                await channel.send({ content: `New AIUB News & Events will be post here.\nPlease wait for that.\nDon't delete this channel. Deleting this channel means stop posting AIUB News & Events in this channel.\nDon't change any permission of this channel. Change when you have knowledge about channel management.` });
+
+                // Success section
+                const successInteractionSection = new SectionBuilder().addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent(`## Channel has been set! Please wait for the next AIUB News & Events.`)
+                ).setThumbnailAccessory(
+                    new ThumbnailBuilder().setURL('https://c.tenor.com/KMMqrCPegSUAAAAd/tenor.gif')
+                );
+
+                // Review section
+                const reviewSection = new SectionBuilder().addTextDisplayComponents(
+                    new TextDisplayBuilder().setContent(`Please review me here.`)
+                ).setButtonAccessory(
+                    new ButtonBuilder()
+                        .setLabel('Review')
+                        .setStyle(ButtonStyle.Link)
+                        .setURL('https://top.gg/bot/1123156043711651910#reviews')
+                );
+
                 
+                const interactionContainer = new ContainerBuilder().addSectionComponents(successInteractionSection, reviewSection);
+
+                await interaction.editReply({
+                    flags: MessageFlags.IsComponentsV2,
+                    components: [interactionContainer]
+                });
+                
+
+                
+                const text = new TextDisplayBuilder().setContent(`New Notice will be post here.\nPlease wait for that.\nDon't delete this channel. Deleting this channel means stop posting notice in this channel.\nDon't change any permission of this channel. Change when you have knowledge about channel management.`)
+                const pepeAsThumbnail = new ThumbnailBuilder().setURL('https://media.tenor.com/Lf2JYGN_5L8AAAAi/pepe.gif');
+                const section = new SectionBuilder().addTextDisplayComponents(text).setThumbnailAccessory(pepeAsThumbnail);
+                const container = new ContainerBuilder().addSectionComponents(section);
+        
+                await channel.send({ 
+                    flags: MessageFlags.IsComponentsV2,
+                    components: [container]
+                });
             }
         } catch (error) {
             console.error('Something went wrong: ', error);

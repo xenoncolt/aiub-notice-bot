@@ -1,14 +1,15 @@
-import { AttachmentBuilder, EmbedBuilder, Events, Interaction } from "discord.js";
+import { APIContainerComponent, AttachmentBuilder, ButtonInteraction, ButtonStyle, ChannelType, ComponentType, ContainerBuilder, EmbedBuilder, Events, Interaction, MessageFlags, PermissionFlagsBits, SectionBuilder, TextDisplayBuilder, ThumbnailBuilder } from "discord.js";
 import { ExtendedClient } from "../../types/ExtendedClient.js";
 import config from "../../config.json" with { type: "json" };
 import { convertPDFToImages, downloadPDF } from "../../utils/noticeFetch.js";
 import { unlinkSync } from "fs";
+import { noticeDB } from "../../schema/aiubNotics.js";
 
 export default {
     name: Events.InteractionCreate,
     once: false,
     async execute(interaction: Interaction, client: ExtendedClient) {
-        if(!interaction.isChatInputCommand() && !interaction.isStringSelectMenu() && !interaction.isAutocomplete()) return;
+        if(!interaction.isChatInputCommand() && !interaction.isStringSelectMenu() && !interaction.isAutocomplete() && !interaction.isButton()) return;
 
         if (interaction.isChatInputCommand()) {
             const cmd = client.commands.get(interaction.commandName);
@@ -65,6 +66,99 @@ export default {
             } catch (error) {
                 console.error('Error handling autocomplete interaction: ', error);
             }
+        } else if (interaction.isButton()) {
+            const buttonId = interaction.customId;
+
+            switch (buttonId) {
+                case 'autoSetupNotice':
+                    await handleAutoSetupNotice(interaction as ButtonInteraction);
+                    break;
+                default:
+                    console.log(`Unknown button interaction: ${buttonId}`);
+            }
         }
+    }
+}
+
+async function handleAutoSetupNotice(interaction: ButtonInteraction) {
+    if (!interaction.guild?.members.me?.permissions.has(PermissionFlagsBits.ManageChannels)) return interaction.reply({ 
+        content: 'I need `Manage Channel` permission to create channel. Please give me this permission and try again.',
+        ephemeral: true
+    });
+
+    try {
+        const category = await interaction.guild?.channels.create({
+            name: 'AIUB Notices',
+            type: ChannelType.GuildCategory,
+            permissionOverwrites: [
+                {
+                    id: interaction.guild.roles.everyone,
+                    allow: [PermissionFlagsBits.ViewChannel],
+                    deny: [PermissionFlagsBits.SendMessages]
+                }
+            ]
+        });
+
+        const newChannel = await interaction.guild?.channels.create({
+            name: 'AIUB-Notice',
+            type: ChannelType.GuildText,
+            parent: category?.id,
+            topic: 'This channel is for AIUB Notices only. New notice will be post here.',
+            permissionOverwrites: [
+                {
+                    id: interaction.guild.roles.everyone,
+                    allow: [PermissionFlagsBits.ViewChannel],
+                    deny: [PermissionFlagsBits.SendMessages]
+                }
+            ]
+        });
+
+        const notice_db = await noticeDB();
+
+        await notice_db.run('INSERT OR IGNORE INTO channel (guild_id, channel_id) VALUES (?, ?)', [newChannel?.guildId, newChannel?.id]);
+
+        const text = new TextDisplayBuilder().setContent(`New Notice will be post here.\nPlease wait for that.\nDon't delete this channel. Deleting this channel means stop posting notice in this channel.\nDon't change any permission of this channel. Change when you have knowledge about channel management.`)
+        
+        const pepeAsThumbnail = new ThumbnailBuilder().setURL('https://media.tenor.com/Lf2JYGN_5L8AAAAi/pepe.gif');
+
+        const section = new SectionBuilder().addTextDisplayComponents(text).setThumbnailAccessory(pepeAsThumbnail);
+        const container = new ContainerBuilder().addSectionComponents(section);
+
+        await newChannel?.send({ 
+            flags: MessageFlags.IsComponentsV2,
+            components: [container]
+        });
+
+        if (interaction.message) {
+            try {
+                const container = interaction.message.components[0].toJSON() as APIContainerComponent;
+                const newContainer = new ContainerBuilder(container);
+        
+                for (const component of newContainer.components) {
+                    
+                    if (component instanceof SectionBuilder && 
+                        component.accessory && 
+                        'data' in component.accessory && 
+                        'custom_id' in component.accessory.data && 
+                        component.accessory.data.custom_id === 'autoSetupNotice') {
+                        
+                        component.accessory.data.disabled = true;
+                        component.accessory.data.label = 'Setup Complete';
+                        component.accessory.data.style = ButtonStyle.Success;
+                        break;
+                    }
+                }
+                
+                await interaction.update({
+                    flags: MessageFlags.IsComponentsV2,
+                    components: [newContainer]
+                });
+            } catch (err) {
+                console.error('Error editing button:', err);
+            }
+        } 
+    } catch (err) {
+        console.error('Error creating channel:', err);
+        interaction.reply({ content: 'Failed to create channel. Try to manual setup.' });
     }
 }
