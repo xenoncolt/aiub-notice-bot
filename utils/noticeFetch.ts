@@ -217,10 +217,14 @@ export async function fetchNotice(client: Client): Promise<void> {
                                 continue;
                             }
 
-                            if (permission.has(PermissionFlagsBits.ManageRoles)) {
-                                if (!permission?.has(PermissionFlagsBits.SendMessages) || !permission.has(PermissionFlagsBits.EmbedLinks)) {
-                                    await channel.permissionOverwrites.create(client.user!, { SendMessages: true, EmbedLinks: true });
-                                    await channel.permissionOverwrites.create(channel.guild.roles.everyone, { SendMessages: false });
+                            if (permission.has([PermissionFlagsBits.ManageRoles, PermissionFlagsBits.ManageChannels])) {
+                                try {
+                                    if (!permission?.has(PermissionFlagsBits.SendMessages) || !permission.has(PermissionFlagsBits.EmbedLinks)) {
+                                        await channel.permissionOverwrites.create(client.user!, { SendMessages: true, EmbedLinks: true });
+                                        await channel.permissionOverwrites.create(channel.guild.roles.everyone, { SendMessages: false });
+                                    }
+                                } catch (permError) {
+                                    console.log(`Cannot update permissions in channel ${channel.name} (${channel.id}): ${permError}`)
                                 }
                             } else if (!permission.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks])) {
                                 const warn_guild = client.guilds.cache.get(guild.id);
