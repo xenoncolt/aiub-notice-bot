@@ -118,6 +118,10 @@ async function handleAutoSetupNotice(interaction: ButtonInteraction) {
                     id: interaction.guild.roles.everyone,
                     allow: [PermissionFlagsBits.ViewChannel],
                     deny: [PermissionFlagsBits.SendMessages]
+                },
+                {
+                    id: interaction.guild.members.me?.id,
+                    allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ManageChannels]
                 }
             ]
         });
@@ -135,7 +139,7 @@ async function handleAutoSetupNotice(interaction: ButtonInteraction) {
                 },
                 {
                     id: interaction.guild.members.me?.id,
-                    allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.AttachFiles]
+                    allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.AttachFiles, PermissionFlagsBits.ManageChannels, PermissionFlagsBits.ManageMessages]
                 }
             ]
         });
