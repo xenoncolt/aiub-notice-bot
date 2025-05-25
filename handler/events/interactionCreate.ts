@@ -9,7 +9,7 @@ export default {
     name: Events.InteractionCreate,
     once: false,
     async execute(interaction: Interaction, client: ExtendedClient) {
-        if(!interaction.isChatInputCommand() && !interaction.isStringSelectMenu() && !interaction.isAutocomplete() && !interaction.isButton()) return;
+        if(!interaction.isChatInputCommand() && !interaction.isStringSelectMenu() && !interaction.isAutocomplete() && !interaction.isButton() && !interaction.isModalSubmit()) return;
 
         if (interaction.isChatInputCommand()) {
             const cmd = client.commands.get(interaction.commandName);
@@ -75,6 +75,29 @@ export default {
                     break;
                 default:
                     console.log(`Unknown button interaction: ${buttonId}`);
+            }
+        } else if (interaction.isModalSubmit()) {
+            const modal_cmds = Array.from(client.commands.values()).find(cmd => 
+                interaction.customId.startsWith(cmd.name) && cmd.modalSubmit
+            );
+
+            if (!modal_cmds) {
+                console.warn(`No command found for modal submit with customId: ${interaction.customId}`);
+                await interaction.reply({
+                    content: `This modal is not recognized.`, ephemeral: true
+                });
+                return;
+            }
+
+            if (modal_cmds && modal_cmds.modalSubmit) {
+                try {
+                    await modal_cmds.modalSubmit(interaction, client);
+                } catch (error) {
+                    console.error(`Error executing modal submit for command ${modal_cmds.name}:`, error);
+                    await interaction.reply({
+                        content: `There was an error while executing this modal submit command!`, ephemeral: true
+                    });
+                }
             }
         }
     }

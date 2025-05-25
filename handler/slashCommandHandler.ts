@@ -33,7 +33,7 @@ export async function registerSlashCommands(client: ExtendedClient) {
     const ownerCmds : any[] = [];
     
     client.commands.forEach(command => {
-        if (command.name === 'bot-info') {
+        if (command.name === 'reply') {
             ownerCmds.push({
                 name: command.name,
                 description: command.description,
