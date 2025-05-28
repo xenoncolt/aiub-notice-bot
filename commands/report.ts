@@ -58,6 +58,9 @@ function reportMsg(user: User, title: string, msg: string) {
         })
         .setDescription(msg)
         .setColor('Random')
+        .setFooter({
+            text: `${user.id}`
+        })
         .setTimestamp();
 
     return embed;
