@@ -1,4 +1,4 @@
-import { ActionRowBuilder, Client, PermissionFlagsBits, StringSelectMenuBuilder, TextChannel, EmbedBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuOptionBuilder, DiscordAPIError, NewsChannel, ChannelType, AttachmentBuilder } from "discord.js";
+import { ActionRowBuilder, Client, PermissionFlagsBits, StringSelectMenuBuilder, TextChannel, EmbedBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuOptionBuilder, DiscordAPIError, NewsChannel, ChannelType, AttachmentBuilder, MessageFlags } from "discord.js";
 import sqlite3 from "sqlite3";
 import { Database, open } from "sqlite";
 import { JSDOM } from "jsdom";
@@ -12,6 +12,7 @@ import { readdir, unlink, writeFile } from "fs/promises";
 import { convertSeatPlanPDFsToJson } from "./processSeatPlan.js";
 import { htmlToDiscordFormat } from "../helper/htmlToDiscordFormat.js";
 import { downloadImage } from "../helper/downloadImage.js";
+import { noticeComponentV2 } from "../helper/convertComponentV2";
 
 // Database for notice channel only
 let notice_db: Database;
@@ -116,10 +117,14 @@ export async function fetchNotice(client: Client): Promise<void> {
                         img_urls.push(sent_msg.attachments.first()!.url);
                     }
     
-                    if (textDescContent!.length > 100 && textDescContent!.length < 4096) {
+                    // if (textDescContent!.length > 100 && textDescContent!.length < 4096) {
+                    //     full_desc = textDescContent;
+                    // } else if (textDescContent!.length > 4096) {
+                    //     full_desc = textDescContent!.slice(0, 4090) + '...';
+                    // }
+
+                    if (textDescContent.length > 100) {
                         full_desc = textDescContent;
-                    } else if (textDescContent!.length > 4096) {
-                        full_desc = textDescContent!.slice(0, 4090) + '...';
                     }
                 }
 
@@ -264,23 +269,25 @@ export async function fetchNotice(client: Client): Promise<void> {
                             // }
 
                             if (channel && (channel instanceof TextChannel || channel instanceof NewsChannel)) {
-                                const embed = new EmbedBuilder()
-                                    .setTitle(title)
-                                    .setDescription(full_desc || desc)
-                                    .setColor("Random")
-                                    .addFields(
-                                        { name: 'Published Date: ', value: `${day} ${month} ${year}`},
-                                        { name: `Note from Bot`, value: `Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY). Always verify information from official [sources](https://www.aiub.edu/category/notices)`}
-                                    )
-                                    .setURL(link)
-                                    .setTimestamp()
-                                    .setFooter({ text: `Remember, this bot is not a replacement for official announcements.`});
+                                // const embed = new EmbedBuilder()
+                                //     .setTitle(title)
+                                //     .setDescription(full_desc || desc)
+                                //     .setColor("Random")
+                                //     .addFields(
+                                //         { name: 'Published Date: ', value: `${day} ${month} ${year}`},
+                                //         { name: `Note from Bot`, value: `Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY). Always verify information from official [sources](https://www.aiub.edu/category/notices)`}
+                                //     )
+                                //     .setURL(link)
+                                //     .setTimestamp()
+                                //     .setFooter({ text: `Remember, this bot is not a replacement for official announcements.`});
 
-                                if (img_urls.length > 0) {
-                                    for (const img_url of img_urls) {
-                                        embed.setImage(img_url);
-                                    }
-                                }
+                                // if (img_urls.length > 0) {
+                                //     for (const img_url of img_urls) {
+                                //         embed.setImage(img_url);
+                                //     }
+                                // }
+                                const formatted_date = `${day} ${month} ${year}`;
+                                const container = noticeComponentV2(title, desc, full_desc, img_urls, formatted_date);
 
                                 const link_btn = new ActionRowBuilder<ButtonBuilder>()
                                     .addComponents(
@@ -301,9 +308,9 @@ export async function fetchNotice(client: Client): Promise<void> {
                                     const menu = new ActionRowBuilder<StringSelectMenuBuilder>()
                                         .addComponents(select_menu);
                                     
-                                    await channel.send({ embeds: [embed], components: [link_btn, menu] });
+                                    await channel.send({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2 });
                                 } else {
-                                    await channel.send({ embeds: [embed], components: [link_btn] });
+                                    await channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
                                 }
                             }
                         }
@@ -340,23 +347,26 @@ export async function fetchNotice(client: Client): Promise<void> {
                             const dm_channel = await user.createDM();
 
                             if (dm_channel.isSendable()) {
-                                const embed = new EmbedBuilder()
-                                    .setTitle(title)
-                                    .setDescription(full_desc || desc)
-                                    .addFields(
-                                        { name: 'Published Date:', value: `${day} ${month} ${year}`},
-                                        { name: `Note from Bot`, value: `Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY). Always verify information from official [sources](https://www.aiub.edu/category/notices)`}
-                                    )
-                                    .setURL(link)
-                                    .setColor('Random')
-                                    .setTimestamp()
-                                    .setFooter({ text: '\'/dm reset\' to stop sending notice | Remember, this bot is not a replacement for official announcements.' });
+                                // const embed = new EmbedBuilder()
+                                //     .setTitle(title)
+                                //     .setDescription(full_desc || desc)
+                                //     .addFields(
+                                //         { name: 'Published Date:', value: `${day} ${month} ${year}`},
+                                //         { name: `Note from Bot`, value: `Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY). Always verify information from official [sources](https://www.aiub.edu/category/notices)`}
+                                //     )
+                                //     .setURL(link)
+                                //     .setColor('Random')
+                                //     .setTimestamp()
+                                //     .setFooter({ text: '\'/dm reset\' to stop sending notice | Remember, this bot is not a replacement for official announcements.' });
 
-                                if (img_urls.length > 0) {
-                                    for (const img_url of img_urls) {
-                                        embed.setImage(img_url);
-                                    }
-                                }
+                                // if (img_urls.length > 0) {
+                                //     for (const img_url of img_urls) {
+                                //         embed.setImage(img_url);
+                                //     }
+                                // }
+                                const formatted_date = `${day} ${month} ${year}`;
+
+                                const container = noticeComponentV2(title, desc, full_desc, img_urls, formatted_date);
 
                                 const link_btn = new ActionRowBuilder<ButtonBuilder>()
                                     .addComponents(
@@ -377,9 +387,9 @@ export async function fetchNotice(client: Client): Promise<void> {
                                     const menu = new ActionRowBuilder<StringSelectMenuBuilder>()
                                         .addComponents(select_menu);
 
-                                    await dm_channel.send({ embeds: [embed], components: [link_btn, menu] });
+                                    await dm_channel.send({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2 });
                                 } else {
-                                    await dm_channel.send({ embeds: [embed], components: [link_btn] });
+                                    await dm_channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
                                 }
                             }
                         } catch (error) {
