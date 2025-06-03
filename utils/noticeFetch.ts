@@ -65,7 +65,7 @@ export async function fetchNotice(client: Client): Promise<void> {
 
         for (let i = 0; i < notices.length; i++) {
             const notice = notices[i];
-             const short_title = notice.querySelector('.title')?.textContent?.trim() || "";
+            const short_title = notice.querySelector('.title')?.textContent?.trim() || "";
             const desc = notice.querySelector('.desc')?.textContent?.trim() || "";
             const link_info = notice.querySelector('.info-link')?.getAttribute('href') || "";
 
@@ -75,7 +75,7 @@ export async function fetchNotice(client: Client): Promise<void> {
             // const year = timeElement?.querySelector('.year')?.textContent || "";
 
             const day_month_text = notice.querySelector('.date-custom')?.childNodes[0]?.textContent?.trim() || "";
-            const [day, month] = day_month_text.split("\n").map(s => s.trim()); 
+            const [day, month] = day_month_text.split("\n").map(s => s.trim());
             const year = notice.querySelector('.date-custom span:nth-child(1)')?.textContent?.trim() || "";
 
             const link = `${config.url}${link_info}`;
@@ -92,7 +92,7 @@ export async function fetchNotice(client: Client): Promise<void> {
             let full_desc = undefined;
             let img_urls: string[] = [];
 
-            const isContentDiv = notice_doc.querySelector('.question-column:not(.notice-sticky-header)'); 
+            const isContentDiv = notice_doc.querySelector('.question-column:not(.notice-sticky-header)');
 
             if (!existing_notice) {
                 const pdf_links = notice_doc.querySelectorAll('a[href$=".pdf"]');
@@ -101,22 +101,22 @@ export async function fetchNotice(client: Client): Promise<void> {
                     // const textDescContent = isContentDiv.textContent?.trim();
                     const textDescHtml = isContentDiv.innerHTML;
                     const { content: textDescContent, imageUrls } = htmlToDiscordFormat(textDescHtml);
-    
+
                     let imgPaths: string[] = [];
-                    
+
                     for (const imgUrl of imageUrls) {
                         const img_path = await downloadImage(imgUrl);
                         imgPaths.push(img_path);
                     }
-    
+
                     const _channel = client.channels.cache.get("1244675616306102402") as TextChannel;
-    
+
                     for (const imgPath of imgPaths) {
                         const attachment = new AttachmentBuilder(imgPath);
                         const sent_msg = await _channel.send({ files: [attachment] });
                         img_urls.push(sent_msg.attachments.first()!.url);
                     }
-    
+
                     // if (textDescContent!.length > 100 && textDescContent!.length < 4096) {
                     //     full_desc = textDescContent;
                     // } else if (textDescContent!.length > 4096) {
@@ -128,7 +128,7 @@ export async function fetchNotice(client: Client): Promise<void> {
                     }
                 }
 
-                let pdf_options: {label: string, description: string, value: string}[] = [];
+                let pdf_options: { label: string, description: string, value: string }[] = [];
                 if (pdf_links.length > 0) {
                     pdf_options = Array.from(pdf_links).map((pdf, index) => ({
                         label: `PDF ${index + 1}`.slice(0, 100),
@@ -136,7 +136,7 @@ export async function fetchNotice(client: Client): Promise<void> {
                         value: `${pdf.getAttribute('href')}`.slice(0, 100)
                     }));
                 }
-                
+
                 const new_notice = {
                     title,
                     desc,
@@ -156,7 +156,7 @@ export async function fetchNotice(client: Client): Promise<void> {
                     console.log(`Found a seat plan notice: ${title}`);
 
                     await clearDir(seat_plan_dir);
-                    for(const pdf of pdf_options) {
+                    for (const pdf of pdf_options) {
                         const pdf_url = `${config.url}${pdf.value}`;
                         try {
                             const pdf_response = await fetch(pdf_url);
@@ -209,7 +209,7 @@ export async function fetchNotice(client: Client): Promise<void> {
                                 const sql = `DELETE FROM channel WHERE channel_id = ?`;
                                 try {
                                     const result = await notice_db.run(sql, [channel_ID]);
-    
+
                                     // The result object contains the 'changes' property, which is the number of row affected
                                     if (result.changes! > 0) {
                                         console.log(`Row(s) deleted: ${result.changes}`);
@@ -233,7 +233,7 @@ export async function fetchNotice(client: Client): Promise<void> {
                                 }
                             } else if (!permission.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks])) {
                                 const warn_guild = client.guilds.cache.get(guild.id);
-                                if (warn_guild) {                                        
+                                if (warn_guild) {
                                     const bot = warn_guild.members.me;
                                     if (!bot) return;
                                     let default_channel = warn_guild.channels.cache.find(
@@ -241,7 +241,7 @@ export async function fetchNotice(client: Client): Promise<void> {
                                             target_channel.type === ChannelType.GuildText && target_channel.permissionsFor(bot).has(PermissionFlagsBits.SendMessages)
                                     );
 
-                                    if(!default_channel) return;
+                                    if (!default_channel) return;
 
                                     if (default_channel && default_channel instanceof TextChannel) {
                                         default_channel.send(`I don\'t have permission to Send Message or Embed Link or Manage Role to <#${channel_ID}> channel. As a result I can't send new notice.  If you don\'t know how to give me that permission then just invite me again (Click to my profile -> Add App -> Add to server).`);
@@ -250,7 +250,7 @@ export async function fetchNotice(client: Client): Promise<void> {
                                 continue;
                             }
 
-                                
+
                             // } else  {
                             //     const sql = `DELETE FROM channel WHERE channel_id = ?`;
                             //     try {
@@ -269,23 +269,6 @@ export async function fetchNotice(client: Client): Promise<void> {
                             // }
 
                             if (channel && (channel instanceof TextChannel || channel instanceof NewsChannel)) {
-                                // const embed = new EmbedBuilder()
-                                //     .setTitle(title)
-                                //     .setDescription(full_desc || desc)
-                                //     .setColor("Random")
-                                //     .addFields(
-                                //         { name: 'Published Date: ', value: `${day} ${month} ${year}`},
-                                //         { name: `Note from Bot`, value: `Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY). Always verify information from official [sources](https://www.aiub.edu/category/notices)`}
-                                //     )
-                                //     .setURL(link)
-                                //     .setTimestamp()
-                                //     .setFooter({ text: `Remember, this bot is not a replacement for official announcements.`});
-
-                                // if (img_urls.length > 0) {
-                                //     for (const img_url of img_urls) {
-                                //         embed.setImage(img_url);
-                                //     }
-                                // }
                                 const formatted_date = `${day} ${month} ${year}`;
                                 const container = noticeComponentV2(title, desc, full_desc, img_urls, formatted_date);
 
@@ -296,7 +279,7 @@ export async function fetchNotice(client: Client): Promise<void> {
                                             .setStyle(ButtonStyle.Link)
                                             .setURL(link)
                                     );
-                                
+
                                 if (pdf_options.length > 0) {
                                     const select_menu = new StringSelectMenuBuilder()
                                         .setCustomId('select-pdf')
@@ -304,10 +287,10 @@ export async function fetchNotice(client: Client): Promise<void> {
                                         .addOptions(
                                             pdf_options.map(option => new StringSelectMenuOptionBuilder(option))
                                         );
-                                    
+
                                     const menu = new ActionRowBuilder<StringSelectMenuBuilder>()
                                         .addComponents(select_menu);
-                                    
+
                                     await channel.send({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2 });
                                 } else {
                                     await channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
@@ -347,23 +330,6 @@ export async function fetchNotice(client: Client): Promise<void> {
                             const dm_channel = await user.createDM();
 
                             if (dm_channel.isSendable()) {
-                                // const embed = new EmbedBuilder()
-                                //     .setTitle(title)
-                                //     .setDescription(full_desc || desc)
-                                //     .addFields(
-                                //         { name: 'Published Date:', value: `${day} ${month} ${year}`},
-                                //         { name: `Note from Bot`, value: `Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY). Always verify information from official [sources](https://www.aiub.edu/category/notices)`}
-                                //     )
-                                //     .setURL(link)
-                                //     .setColor('Random')
-                                //     .setTimestamp()
-                                //     .setFooter({ text: '\'/dm reset\' to stop sending notice | Remember, this bot is not a replacement for official announcements.' });
-
-                                // if (img_urls.length > 0) {
-                                //     for (const img_url of img_urls) {
-                                //         embed.setImage(img_url);
-                                //     }
-                                // }
                                 const formatted_date = `${day} ${month} ${year}`;
 
                                 const container = noticeComponentV2(title, desc, full_desc, img_urls, formatted_date);
@@ -417,7 +383,7 @@ export async function fetchNotice(client: Client): Promise<void> {
                     console.log(`No users found in the database who subscribe for notices`);
                 }
             }
-        } 
+        }
 
         notice_object = [...notice_object, ...new_notices];
 
