@@ -12,7 +12,7 @@ import { readdir, unlink, writeFile } from "fs/promises";
 import { convertSeatPlanPDFsToJson } from "./processSeatPlan.js";
 import { htmlToDiscordFormat } from "../helper/htmlToDiscordFormat.js";
 import { downloadImage } from "../helper/downloadImage.js";
-import { noticeComponentV2 } from "../helper/convertComponentV2";
+import { noticeComponentV2 } from "../helper/convertComponentV2.js";
 
 // Database for notice channel only
 let notice_db: Database;
