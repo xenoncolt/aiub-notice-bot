@@ -11,7 +11,7 @@ export default {
     description: 'Get information about the bot',
     async execute(interaction: ChatInputCommandInteraction, client: Client) {
         const server_count = client.guilds.cache.size;
-        const user_count = client.users.cache.size;
+        const user_count = client.guilds.cache.reduce((user, guild) => user + guild.memberCount, 0);
         const os_info = os.type();
         const node_version = process.version;
         const platform = os.platform();

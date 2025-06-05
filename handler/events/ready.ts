@@ -21,8 +21,8 @@ export default {
         setInterval(() => {
             const sts = [
                 {name: `custom`, type: 4, state: `🪧Latest notice: ${last_notice.title}` as const},
-                { name: `with ${client.guilds.cache.size} servers`, type: 0 as const},
-                { name: `custom`, type: 4, state: `🤖 Version : v${package_info.version}.${commit_count}` }
+                { name: `with ${client.guilds.cache.size} servers and ${client.guilds.cache.reduce((user, guild) => user + guild.memberCount, 0)} users`, type: 0 as const},
+                { name: `custom`, type: 4, state: `🤖 Version : v${package_info.version}.${commit_count}`}
             ];
             client.user?.setPresence({
                 activities: [sts[status_index]],
