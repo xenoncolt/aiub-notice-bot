@@ -1,7 +1,8 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
+import { ActionRowBuilder, APISelectMenuOption, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder, MessageFlags, SelectMenuComponentOptionData, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
 import config from "../config.json" with { type: "json" };
 import { readFileSync } from "fs";
 import { Command } from "../types/Command";
+import { noticeComponentV2 } from "../helper/convertComponentV2.js";
 
 export default {
     name: 'latest',
@@ -35,23 +36,25 @@ export default {
 
 
             if (text === 'notice') {
-                const embed = new EmbedBuilder()
-                    .setTitle(latest_notice.title)
-                    .setDescription(latest_notice.full_desc || latest_notice.desc)
-                    .addFields(
-                        { name: 'Published Date:', value: `${latest_notice.day} ${latest_notice.month} ${latest_notice.year}` },
-                        { name: `Note`, value: `Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY). Always verify information from official [sources](https://www.aiub.edu/category/notices)`}
-                    )
-                    .setColor('Random')
-                    .setURL(config.url+latest_notice.link_info)
-                    .setFooter({ text: 'Remember, this bot is not a replacement for official announcements.' })
-                    .setTimestamp();
+                // const embed = new EmbedBuilder()
+                //     .setTitle(latest_notice.title)
+                //     .setDescription(latest_notice.full_desc || latest_notice.desc)
+                //     .addFields(
+                //         { name: 'Published Date:', value: `${latest_notice.day} ${latest_notice.month} ${latest_notice.year}` },
+                //         { name: `Note`, value: `Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY). Always verify information from official [sources](https://www.aiub.edu/category/notices)`}
+                //     )
+                //     .setColor('Random')
+                //     .setURL(config.url+latest_notice.link_info)
+                //     .setFooter({ text: 'Remember, this bot is not a replacement for official announcements.' })
+                //     .setTimestamp();
 
-                if (latest_notice.img_urls.length > 0) {
-                    for (const img_url of latest_notice.img_urls) {
-                        embed.setImage(img_url);
-                    }
-                }
+                // if (latest_notice.img_urls.length > 0) {
+                //     for (const img_url of latest_notice.img_urls) {
+                //         embed.setImage(img_url);
+                //     }
+                // }
+
+                const container = noticeComponentV2(latest_notice.title, latest_notice.desc, latest_notice.full_desc, latest_notice.img_urls, `${latest_notice.day} ${latest_notice.month} ${latest_notice.year}`);
 
                 const link_btn = new ActionRowBuilder<ButtonBuilder>()
                     .addComponents(
@@ -60,14 +63,27 @@ export default {
                             .setStyle(ButtonStyle.Link)
                             .setURL(config.url+latest_notice.link_info)
                     );
-
-                await interaction.reply({ embeds: [embed], components: [link_btn] });
+                    
+                if (latest_notice.pdf_options && latest_notice.pdf_options.length > 0) {
+                    const select_menu = new StringSelectMenuBuilder()
+                                        .setCustomId('select-pdf')
+                                        .setPlaceholder('Select a PDF to send to your DM')
+                                        .addOptions(
+                                            latest_notice.pdf_options.map((option: APISelectMenuOption | SelectMenuComponentOptionData | undefined) => new StringSelectMenuOptionBuilder(option)) as []
+                                        );
+                    
+                    const menu = new ActionRowBuilder<StringSelectMenuBuilder>()
+                        .addComponents(select_menu);
+                    await interaction.reply({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2 });
+                } else {
+                    await interaction.reply({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
+                }
             } else if (text === 'news') {
                 await interaction.reply('News is not available yet.');
             }
         } catch (error) {
             console.error(error);
-            await interaction.reply({ content: 'Error occurred while fetching the data.', ephemeral: true });
+            await interaction.reply({ content: 'Error occurred while fetching the data.', flags: MessageFlags.Ephemeral });
         }
     }
 } as Command;

@@ -76,6 +76,11 @@ export default {
                     inline: true
                 },
                 {
+                    name: "Guild owner ID",
+                    value: (await guild.fetchOwner()).id,
+                    inline: true
+                },
+                {
                     name: "Guild Total Members",
                     value: guild.memberCount.toString(),
                     inline: false

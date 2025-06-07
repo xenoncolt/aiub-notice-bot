@@ -47,7 +47,7 @@ export function noticeComponentV2(title: string, desc: string, full_desc: string
 
     container.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            `-# Note from Bot: Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY).\n-# Always verify information from official [sources](https://www.aiub.edu/category/notices)\n-# Remember, this bot is not a replacement for official announcements.`
+            `-# Note from Bot: Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY).\n-# Always verify information from official [sources](https://www.aiub.edu/category/notices)\n-# Remember, this bot is not a replacement for official announcements.\n-# If you face any issues, or notice is not correct, use this command to report: \`/report\``
         )
     );
 

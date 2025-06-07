@@ -1,7 +1,8 @@
-import { ActionRowBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Client, EmbedBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
+import { ActionRowBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Client, EmbedBuilder, MessageFlags, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
 import notices from "../database/notice.json" with { type: "json" };
 import config from "../config.json" with { type: "json" };
 import { Command } from "../types/Command";
+import { noticeComponentV2 } from "../helper/convertComponentV2.js";
 
 export default {
     name: 'notice',
@@ -30,24 +31,26 @@ export default {
 
             const link_url = notice?.link_info.startsWith(config.url) ? notice.link_info : config.url+notice?.link_info;
 
-            const embed = new EmbedBuilder()
-                .setTitle(notice?.title as string)
-                .setDescription(notice?.full_desc ||notice?.desc as string)
-                .setColor('Random')
-                .addFields(
-                    {
-                        name: 'Published Date:',
-                        value: `${notice?.day} ${notice?.month} ${notice?.year}`
-                    }
-                )
-                .setURL(link_url as string)
-                .setTimestamp();
+            // const embed = new EmbedBuilder()
+            //     .setTitle(notice?.title as string)
+            //     .setDescription(notice?.full_desc ||notice?.desc as string)
+            //     .setColor('Random')
+            //     .addFields(
+            //         {
+            //             name: 'Published Date:',
+            //             value: `${notice?.day} ${notice?.month} ${notice?.year}`
+            //         }
+            //     )
+            //     .setURL(link_url as string)
+            //     .setTimestamp();
 
-                if (notice?.img_urls?.length as number > 0) {
-                    for (const img_url of notice!.img_urls!) {
-                        embed.setImage(img_url);
-                    }
-                }
+            //     if (notice?.img_urls?.length as number > 0) {
+            //         for (const img_url of notice!.img_urls!) {
+            //             embed.setImage(img_url);
+            //         }
+            //     }
+
+            const container = noticeComponentV2(notice!.title, notice!.desc, notice?.full_desc, notice!.img_urls as string[], `${notice?.day} ${notice?.month} ${notice?.year}`);
 
             const link_btn = new ActionRowBuilder<ButtonBuilder>()
                 .addComponents(
@@ -68,9 +71,9 @@ export default {
                 const menu = new ActionRowBuilder<StringSelectMenuBuilder>()
                     .addComponents(select_menu);
                 
-                await interaction.reply({ embeds: [embed], components: [link_btn, menu] });
+                await interaction.reply({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2 });
             } else {
-                await interaction.reply({ embeds: [embed], components: [link_btn] });
+                await interaction.reply({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
             }
         } catch (error) {
             console.error(error);
