@@ -41,7 +41,7 @@ export default {
                 { name: "<a:arrow:1003994520901386281> General -- Stats", value: `\`\`\`yml\nServers: ${server_count} \nUsers: ${user_count}\`\`\``, inline: true },
                 { name: "<a:arrow:1003994520901386281> Bot -- Stats", value: `\`\`\`yml\nApp Version: v${config.version} \nNode.js: ${node_version}\`\`\``, inline: true },
                 { name: "<a:arrow:1003994520901386281> System -- Stats", value: `\`\`\`yml\nOS: ${os_info} \nPlatform: ${platform} \nCPU Usage: ${cpu_usage} % \nRAM Usage: ${ram_usages} MB\`\`\``, inline: false },
-                { name: "<a:arrow:1003994520901386281> Developer", value: `\`\`\`yml\nName: Xenon Colt \nUsername: xenoncolt\`\`\` [Website](https://xenoncolt.me)`, inline: false }
+                { name: "<a:arrow:1003994520901386281> Developer", value: `\`\`\`yml\nName: Xenon Colt \nUsername: xenoncolt\`\`\` [Website](https://xenoncolt.live)`, inline: false }
             );
 
         await interaction.editReply({ embeds: [embed] });

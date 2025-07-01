@@ -1,4 +1,4 @@
-import { ActionRowBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Client, EmbedBuilder, MessageFlags, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
+import { ActionRowBuilder, APISelectMenuOption, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Client, EmbedBuilder, MessageFlags, SelectMenuComponentOptionData, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
 import notices from "../database/notice.json" with { type: "json" };
 import config from "../config.json" with { type: "json" };
 import { Command } from "../types/Command";
@@ -65,7 +65,7 @@ export default {
                     .setCustomId('select-pdf')
                     .setPlaceholder('Select a PDF to send to your DM')
                     .addOptions(
-                        notice?.pdf_options?.map(option => new StringSelectMenuOptionBuilder(option)) as []
+                        notice?.pdf_options?.map((option: SelectMenuComponentOptionData | APISelectMenuOption | undefined) => new StringSelectMenuOptionBuilder(option)) as []
                     );
 
                 const menu = new ActionRowBuilder<StringSelectMenuBuilder>()

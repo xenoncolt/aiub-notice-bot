@@ -117,18 +117,14 @@ export async function fetchNotice(client: Client): Promise<void> {
                         img_urls.push(sent_msg.attachments.first()!.url);
                     }
 
-                    // if (textDescContent!.length > 100 && textDescContent!.length < 4096) {
+                    // if (textDescContent!.length > 100 && textDescContent!.length < 4000) {
                     //     full_desc = textDescContent;
-                    // } else if (textDescContent!.length > 4096) {
-                    //     full_desc = textDescContent!.slice(0, 4090) + '...';
+                    // } else if (textDescContent!.length > 4000) {
+                    //     full_desc = textDescContent!.slice(0, 3970) + '...Click details to see more';
                     // }
 
                     if (textDescContent.length > 100) {
-                        if (textDescContent.length > 4000) {
-                            full_desc = textDescContent.slice(0, 3970) + '... Click details to see more'
-                        } else {
                             full_desc = textDescContent;
-                        }
                     }
                 }
 
