@@ -124,7 +124,11 @@ export async function fetchNotice(client: Client): Promise<void> {
                     // }
 
                     if (textDescContent.length > 100) {
-                        full_desc = textDescContent;
+                        if (textDescContent.length > 4000) {
+                            full_desc = textDescContent.slice(0, 3970) + '... Click details to see more'
+                        } else {
+                            full_desc = textDescContent;
+                        }
                     }
                 }
 
