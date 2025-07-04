@@ -11,7 +11,8 @@ export default {
     description: 'Get information about the bot',
     async execute(interaction: ChatInputCommandInteraction, client: Client) {
         const server_count = client.guilds.cache.size;
-        const user_count = client.guilds.cache.reduce((user, guild) => user + guild.memberCount, 0);
+        const user_count = client.application?.approximateUserAuthorizationCount;
+        const d_user_count = client.application?.approximateUserInstallCount;
         const os_info = os.type();
         const node_version = process.version;
         const platform = os.platform();
@@ -38,7 +39,7 @@ export default {
             .setTitle("Bot Information")
             .setDescription(`\`\`\`yml\nName: ${client.user?.tag}\nBot Latency: ${api_latency}ms \nRuntime: ${days} Days︲${hours} Hrs︲${mins} Mins︲${secs} Secs \`\`\``)
             .addFields(
-                { name: "<a:arrow:1003994520901386281> General -- Stats", value: `\`\`\`yml\nServers: ${server_count} \nUsers: ${user_count}\`\`\``, inline: true },
+                { name: "<a:arrow:1003994520901386281> General -- Stats", value: `\`\`\`yml\nServers: ${server_count} \nUsers: ${user_count} | ${d_user_count}\`\`\``, inline: true },
                 { name: "<a:arrow:1003994520901386281> Bot -- Stats", value: `\`\`\`yml\nApp Version: v${config.version} \nNode.js: ${node_version}\`\`\``, inline: true },
                 { name: "<a:arrow:1003994520901386281> System -- Stats", value: `\`\`\`yml\nOS: ${os_info} \nPlatform: ${platform} \nCPU Usage: ${cpu_usage} % \nRAM Usage: ${ram_usages} MB\`\`\``, inline: false },
                 { name: "<a:arrow:1003994520901386281> Developer", value: `\`\`\`yml\nName: Xenon Colt \nUsername: xenoncolt\`\`\` [Website](https://xenoncolt.live)`, inline: false }

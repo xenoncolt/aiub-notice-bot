@@ -7,7 +7,11 @@ export function noticeComponentV2(title: string, desc: string, full_desc: string
     const footer_text = `-# Note from Bot: Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY).\n-# Always verify information from official [sources](https://www.aiub.edu/category/notices)\n-# Remember, this bot is not a replacement for official announcements.\n-# If you face any issues, or notice is not correct, use this command to report: \`/report\``;
 
     const available_space = 4000 - (title_text.length + 30);
-    const full_desc_text = full_desc!.length > available_space ? full_desc!.slice(0, available_space) + '... Click details to see more' : full_desc;
+
+    let full_desc_text = desc;
+    if (full_desc) {
+        full_desc_text = full_desc!.length > available_space ? full_desc!.slice(0, available_space) + '... Click details to see more' : full_desc;
+    }
 
     const title_section_text = new TextDisplayBuilder().setContent(title_text);
     container.addTextDisplayComponents(title_section_text);
@@ -24,12 +28,11 @@ export function noticeComponentV2(title: string, desc: string, full_desc: string
     //             )
     //         )
     //     } else {
-
     //     }
     // }
     container.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            full_desc_text || desc
+            full_desc_text
         )
     );
 
@@ -44,7 +47,7 @@ export function noticeComponentV2(title: string, desc: string, full_desc: string
         container.addMediaGalleryComponents(media_builder);
     }
 
-    if (full_desc!.length < available_space) {
+    if (full_desc && full_desc.length < available_space) {
         container.addSeparatorComponents(
         new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small)
     );
