@@ -102,12 +102,13 @@ export async function fetchNotice(client: Client): Promise<void> {
                     const textDescHtml = isContentDiv.innerHTML;
                     const { content: textDescContent, imageUrls } = htmlToDiscordFormat(textDescHtml);
 
-                    let imgPaths: string[] = [];
+                    let imgPaths: Buffer[] = await downloadImage(imageUrls);
 
-                    for (const imgUrl of imageUrls) {
-                        const img_path = await downloadImage(imgUrl);
-                        imgPaths.push(img_path);
-                    }
+                    // for (const imgUrl of imageUrls) {
+                    //     const img_path = await downloadImage(imgUrl);
+                    //     imgPaths.push(img_path);
+                    // }
+
 
                     const _channel = client.channels.cache.get("1244675616306102402") as TextChannel;
 

@@ -6,24 +6,37 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-export async function downloadImage(url: string): Promise<string> {
+export async function downloadImage(urls: string[]): Promise<Buffer[]> {
     const dir = join(__dirname, '../download');
+    let buffers: Buffer[] = [];
 
     mkdirSync(dir, { recursive: true });
 
-    const img_path = join(dir, 'temp.jpg');
-    const writer = createWriteStream(img_path);
+    for (const [index, url] of urls.entries()) {
+        const img_path = join(dir, `temp-${index}.jpg`);
+        const writer = createWriteStream(img_path);
+        const res = await axios({
+            url,
+            method: 'GET',
+            responseType: 'stream'
+        });
+        res.data.pipe(writer);
+        buffers.push(await new Promise<Buffer>((resolve, reject) => {
+            writer.on('finish', () => resolve(Buffer.from(img_path)));
+            writer.on('error', reject);
+        }));
+    }
 
-    const response = await axios({
-        url,
-        method: 'GET',
-        responseType: 'stream'
-    });
+    //const img_path = join(dir, 'temp.jpg');
+    // const writer = createWriteStream(img_path);
 
-    response.data.pipe(writer);
+    // const response = await axios({
+    //     url,
+    //     method: 'GET',
+    //     responseType: 'stream'
+    // });
 
-    return new Promise((resolve, reject) => {
-        writer.on('finish', () => resolve(img_path));
-        writer.on('error', reject);
-    });
+    // response.data.pipe(writer);
+
+    return buffers;
 }
