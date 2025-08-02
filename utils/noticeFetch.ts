@@ -1,4 +1,4 @@
-import { ActionRowBuilder, Client, PermissionFlagsBits, StringSelectMenuBuilder, TextChannel, EmbedBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuOptionBuilder, DiscordAPIError, NewsChannel, ChannelType, AttachmentBuilder, MessageFlags } from "discord.js";
+import { ActionRowBuilder, Client, PermissionFlagsBits, StringSelectMenuBuilder, TextChannel, EmbedBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuOptionBuilder, DiscordAPIError, NewsChannel, ChannelType, AttachmentBuilder, MessageFlags, ContainerBuilder } from "discord.js";
 import sqlite3 from "sqlite3";
 import { Database, open } from "sqlite";
 import { JSDOM } from "jsdom";
@@ -102,7 +102,7 @@ export async function fetchNotice(client: Client): Promise<void> {
                     const textDescHtml = isContentDiv.innerHTML;
                     const { content: textDescContent, imageUrls } = htmlToDiscordFormat(textDescHtml);
 
-                    let imgPaths: Buffer[] = await downloadImage(imageUrls);
+                    const img_paths = await downloadImage(imageUrls) as string[];
 
                     // for (const imgUrl of imageUrls) {
                     //     const img_path = await downloadImage(imgUrl);
@@ -112,8 +112,8 @@ export async function fetchNotice(client: Client): Promise<void> {
 
                     const _channel = client.channels.cache.get("1244675616306102402") as TextChannel;
 
-                    for (const imgPath of imgPaths) {
-                        const attachment = new AttachmentBuilder(imgPath);
+                    for (const [index, imgPath] of img_paths.entries()) {
+                        const attachment = new AttachmentBuilder(imgPath, { name: `image-${index + 1}.png` });
                         const sent_msg = await _channel.send({ files: [attachment] });
                         img_urls.push(sent_msg.attachments.first()!.url);
                     }

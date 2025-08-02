@@ -13,9 +13,10 @@ export async function newsEventsDB() {
     const db = await newsDatabase();
     await db.exec(`
         CREATE TABLE IF NOT EXISTS aiub (
-            title TEXT PRIMARY KEY,
+            title TEXT,
             desc TEXT,
-            link_info TEXT,
+            link_info TEXT PRIMARY KEY,
+            img_urls TEXT,
             published_date TEXT
         )
     `)

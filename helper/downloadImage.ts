@@ -6,9 +6,9 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-export async function downloadImage(urls: string[] | string): Promise<Buffer[] | Buffer> {
+export async function downloadImage(urls: string[] | string): Promise<string[] | string> {
     const dir = join(__dirname, '../download');
-    let buffers: Buffer[] = [];
+    let paths: string[] = [];
 
     mkdirSync(dir, { recursive: true });
 
@@ -22,8 +22,8 @@ export async function downloadImage(urls: string[] | string): Promise<Buffer[] |
                 responseType: 'stream'
             });
             res.data.pipe(writer);
-            buffers.push(await new Promise<Buffer>((resolve, reject) => {
-                writer.on('finish', () => resolve(Buffer.from(img_path)));
+            paths.push(await new Promise<string>((resolve, reject) => {
+                writer.on('finish', () => resolve(img_path));
                 writer.on('error', reject);
             }));
         }
@@ -36,8 +36,8 @@ export async function downloadImage(urls: string[] | string): Promise<Buffer[] |
             responseType: 'stream'
         });
         res.data.pipe(writer);
-        return new Promise<Buffer>((resolve, reject) => {
-            writer.on('finish', () => resolve(Buffer.from(img_path)));
+        return new Promise<string>((resolve, reject) => {
+            writer.on('finish', () => resolve(img_path));
             writer.on('error', reject);
         });
     }
@@ -53,5 +53,5 @@ export async function downloadImage(urls: string[] | string): Promise<Buffer[] |
 
     // response.data.pipe(writer);
 
-    return buffers;
+    return paths;
 }

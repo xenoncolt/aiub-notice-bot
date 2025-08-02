@@ -1,6 +1,6 @@
 {
   "name": "aiub-notice-bot",
-  "version": "1.9.9",
+  "version": "1.9.10",
   "description": "A notice bot which fetch notice aiub page to discord",
   "main": "index.js",
   "type": "module",
