@@ -107,7 +107,7 @@ export default {
 } as Command;
 
 async function getFacultyDetails(profile: FacultyProfile, client: Client): Promise<EmbedBuilder> {
-    const image_path = await downloadImage(config.url + profile.PersonalOtherInfo.SecondProfilePhoto) as Buffer;
+    const image_path = await downloadImage(config.url + profile.PersonalOtherInfo.SecondProfilePhoto) as string;
     const channel = client.channels.cache.get('1244675616306102402') as TextChannel;
     const att_name = profile.CvPersonal.Name.replace(/\s+/g, '-').toLowerCase();
     const attachment = new AttachmentBuilder(image_path);
