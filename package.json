@@ -1,6 +1,6 @@
 {
   "name": "aiub-notice-bot",
-  "version": "1.9.11",
+  "version": "1.9.12",
   "description": "A notice bot which fetch notice aiub page to discord",
   "main": "index.js",
   "type": "module",
@@ -43,6 +43,6 @@
     "ts-node-dev": "^2.0.0",
     "tslib": "2.8.1",
     "tsx": "4.20.3",
-    "typescript": "5.8.3"
+    "typescript": "5.9.2"
   }
 }

@@ -56,7 +56,7 @@ export default {
             }
 
             if (profile) {
-                const embed = await getFacultyDetails(profile, client);
+                const { embed, attachment } = await getFacultyDetails(profile, client);
                 const link_btn = new ActionRowBuilder<ButtonBuilder>()
                     .addComponents(
                         new ButtonBuilder()
@@ -64,7 +64,7 @@ export default {
                             .setStyle(ButtonStyle.Link)
                             .setURL('https://www.aiub.edu/faculty-list/faculty-profile#' + profile.CvPersonal.Email)
                     );
-                await interaction.reply({ embeds: [embed!], components: [link_btn] });
+                await interaction.reply({ embeds: [embed!], components: [link_btn], files: [attachment] });
             } else {
                 await interaction.reply('Faculty or Teacher you are looking for is not found.\nPlease make sure your **Name** or **Email** is correct. It will also suggest some name where you can select one. You can use either **Name** or **Email** to search.');
             }
@@ -106,19 +106,19 @@ export default {
     }
 } as Command;
 
-async function getFacultyDetails(profile: FacultyProfile, client: Client): Promise<EmbedBuilder> {
+async function getFacultyDetails(profile: FacultyProfile, client: Client): Promise<{ embed: EmbedBuilder, attachment: AttachmentBuilder }> {
     const image_path = await downloadImage(config.url + profile.PersonalOtherInfo.SecondProfilePhoto) as string;
-    const channel = client.channels.cache.get('1244675616306102402') as TextChannel;
+    // const channel = client.channels.cache.get('1244675616306102402') as TextChannel;
     const att_name = profile.CvPersonal.Name.replace(/\s+/g, '-').toLowerCase();
-    const attachment = new AttachmentBuilder(image_path);
+    const attachment = new AttachmentBuilder(image_path, { name: `${att_name}.png` });
 
-    const sent_msg = await channel.send({ files: [attachment] });
-    const attachment_url = sent_msg.attachments.first()?.url;
+    // const sent_msg = await channel.send({ files: [attachment] });
+    // const attachment_url = sent_msg.attachments.first()?.url;
 
     const embed = new EmbedBuilder()
         .setTitle(profile.CvPersonal.Name)
         .setColor('Random')
-        .setThumbnail(attachment_url!)
+        .setThumbnail(`attachment://${att_name}.png`)
         .addFields(
             { name: 'Faculty:', value: profile.Faculty || 'Unavailable', inline: true },
             { name: 'Designation:', value: profile.Designation || 'Unavailable', inline: false },
@@ -129,5 +129,5 @@ async function getFacultyDetails(profile: FacultyProfile, client: Client): Promi
         )
         .setFooter({ text: "Sometimes the data may not be accurate or up to date due to the nature of the source." });
 
-    return embed;
+    return { embed, attachment };
 }
