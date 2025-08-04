@@ -45,7 +45,7 @@ export async function fetchNewsEvents(client: Client): Promise<void> {
             // const month = time_element?.querySelector('.month')?.textContent || "";
             // const year = time_element?.querySelector('.year')?.textContent || "";
 
-            const published_date = news_event.querySelector('lqd-lp-date')?.textContent?.trim() || "";
+            const published_date = news_event.querySelector('.lqd-lp-date')?.textContent?.trim() || "";
 
             const link = `${config.url}${link_info}`;
 
