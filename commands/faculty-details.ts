@@ -30,7 +30,7 @@ export default {
         }
     ],
 
-    async execute(interaction: ChatInputCommandInteraction, client: Client) {
+    async execute(interaction: ChatInputCommandInteraction) {
         try {
             const email = interaction.options.getString('email');
             const name = interaction.options.getString('name');
@@ -56,7 +56,7 @@ export default {
             }
 
             if (profile) {
-                const { embed, attachment } = await getFacultyDetails(profile, client);
+                const { embed, attachment } = await getFacultyDetails(profile);
                 const link_btn = new ActionRowBuilder<ButtonBuilder>()
                     .addComponents(
                         new ButtonBuilder()
@@ -106,7 +106,7 @@ export default {
     }
 } as Command;
 
-async function getFacultyDetails(profile: FacultyProfile, client: Client): Promise<{ embed: EmbedBuilder, attachment: AttachmentBuilder }> {
+async function getFacultyDetails(profile: FacultyProfile): Promise<{ embed: EmbedBuilder, attachment: AttachmentBuilder }> {
     const image_path = await downloadImage(config.url + profile.PersonalOtherInfo.SecondProfilePhoto) as string;
     // const channel = client.channels.cache.get('1244675616306102402') as TextChannel;
     const att_name = profile.CvPersonal.Name.replace(/\s+/g, '-').toLowerCase();
