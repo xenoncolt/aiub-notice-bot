@@ -1,7 +1,7 @@
 import axios from "axios";
 import { ActionRowBuilder, AttachmentBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Client, EmbedBuilder, TextChannel } from "discord.js";
 import config from "../config.json" with { type: "json" };
-import { FacultyProfile } from "../types/FacultyProfile.js";
+import { FacultyProfile, tempFP } from "../types/FacultyProfile.js";
 import path, { resolve } from "path";
 import { createWriteStream, mkdirSync } from "fs";
 import { Command } from "../types/Command";
@@ -53,6 +53,16 @@ export default {
             if (!profile && email) {
                 profile = profile_list.find(profile => profile.CvPersonal.Email && profile.CvPersonal.Email.toLowerCase() === email.toLowerCase());
                 // console.log(profile);
+            }
+            
+            // temp fix
+            const res = await axios.get(config.temp_f_de);
+            console.log(res.data);
+            if (res.status === 200) {
+                console.log("OK");
+                const temp_pfp_list: tempFP[] = res.data;
+                const temp_pfp = temp_pfp_list.find(p => p.Email === profile!.CvPersonal.Email);
+                profile!.PersonalOtherInfo.RoomNo = temp_pfp?.["Room No"] || profile?.PersonalOtherInfo.RoomNo;
             }
 
             if (profile) {

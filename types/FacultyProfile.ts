@@ -13,3 +13,8 @@ export interface FacultyProfile {
         SecondProfilePhoto: string;
     }
 }
+
+export interface tempFP {
+    "Room No": string;
+    Email: string;
+}
