@@ -57,12 +57,19 @@ export default {
             
             // temp fix
             const res = await axios.get(config.temp_f_de);
-            console.log(res.data);
+            // console.log(res.data);
             if (res.status === 200) {
-                console.log("OK");
+                // console.log("OK");
                 const temp_pfp_list: tempFP[] = res.data;
                 const temp_pfp = temp_pfp_list.find(p => p.Email === profile!.CvPersonal.Email);
-                profile!.PersonalOtherInfo.RoomNo = temp_pfp?.["Room No"] || profile?.PersonalOtherInfo.RoomNo;
+                if (temp_pfp?.["Room No"]) {
+                    const room_no = temp_pfp["Room No"];
+                    profile!.PersonalOtherInfo.RoomNo = room_no || profile?.PersonalOtherInfo.RoomNo;
+                    const first_char = room_no.charAt(0);
+                    profile!.PersonalOtherInfo.BuildingNo = first_char === 'D' ? 'D - Building' :
+                        ['1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(first_char) ? `ANNEX - ${first_char}` :
+                        'Unknown Building';
+                }
             }
 
             if (profile) {
