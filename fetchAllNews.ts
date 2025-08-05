@@ -1,10 +1,7 @@
 import config from "./config.json" with { type: "json" };
 import { JSDOM } from "jsdom";
-import { Database, open } from "sqlite";
-import sqlite3 from "sqlite3";
 import { htmlToDiscordFormat } from "./helper/htmlToDiscordFormat";
-import { channelDB, newsEventsDB } from "./schema/aiubNews.js";
-import { downloadImage } from "./helper/downloadImage";
+import { newsEventsDB } from "./schema/aiubNews.js";
 
 
 const news_db = await newsEventsDB();
@@ -34,7 +31,6 @@ for (let i = 0; i < news_array.length; i++) {
     const notice_text = await notice_response.text();
     const notice_dom = new JSDOM(notice_text);
     const notice_doc = notice_dom.window.document;
-    const existing_news_event = await news_db.get('SELECT title FROM aiub WHERE title = ?', [title]);
 
     // console.log(notice_doc);
     const isContentDiv = notice_doc.querySelector('.content-description');

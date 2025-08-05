@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ContainerBuilder, GuildMember, MediaGalleryBuilder, MediaGalleryItemBuilder, MessageFlags, ModalActionRowComponentBuilder, ModalBuilder, ModalSubmitInteraction, SectionBuilder, SeparatorBuilder, SeparatorSpacingSize, TextDisplayBuilder, TextInputBuilder, TextInputStyle, ThumbnailBuilder, User } from "discord.js";
+import { ActionRowBuilder, ApplicationCommandOptionType, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ContainerBuilder, MessageFlags, ModalActionRowComponentBuilder, ModalBuilder, ModalSubmitInteraction, SectionBuilder, SeparatorBuilder, SeparatorSpacingSize, TextDisplayBuilder, TextInputBuilder, TextInputStyle, User } from "discord.js";
 import { Command } from "../types/Command";
 import config from "../config.json" with { type: "json" };
 

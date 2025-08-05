@@ -1,6 +1,6 @@
 import sqlite3 from "sqlite3";
 import { Database, open } from "sqlite";
-import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Client, ContainerBuilder, GuildMember, MediaGalleryBuilder, MediaGalleryComponent, MediaGalleryItemBuilder, MessageFlags, NewsChannel, PermissionFlagsBits, SectionBuilder, TextChannel, TextDisplayBuilder, ThumbnailBuilder } from "discord.js";
+import { ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Client, ContainerBuilder, GuildMember, MessageFlags, NewsChannel, PermissionFlagsBits, SectionBuilder, TextChannel, TextDisplayBuilder, ThumbnailBuilder } from "discord.js";
 import { Command } from "../types/Command";
 import { channelDB } from "../schema/aiubNews.js";
 

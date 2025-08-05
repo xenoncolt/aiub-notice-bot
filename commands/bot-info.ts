@@ -16,7 +16,6 @@ export default {
         const os_info = os.type();
         const node_version = process.version;
         const platform = os.platform();
-        const bot_latency = Math.round(client.ws.ping);
         const ram_usages = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
 
         let secs = Math.floor((Date.now() - start_time) / 1000);

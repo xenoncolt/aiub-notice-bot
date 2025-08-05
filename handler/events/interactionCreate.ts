@@ -1,4 +1,4 @@
-import { APIContainerComponent, AttachmentBuilder, ButtonInteraction, ButtonStyle, ChannelType, ComponentType, ContainerBuilder, EmbedBuilder, Events, Interaction, MessageFlags, PermissionFlagsBits, SectionBuilder, TextDisplayBuilder, ThumbnailBuilder } from "discord.js";
+import { APIContainerComponent, AttachmentBuilder, ButtonInteraction, ButtonStyle, ChannelType, ContainerBuilder, EmbedBuilder, Events, Interaction, MessageFlags, PermissionFlagsBits, SectionBuilder, TextDisplayBuilder, ThumbnailBuilder } from "discord.js";
 import { ExtendedClient } from "../../types/ExtendedClient.js";
 import config from "../../config.json" with { type: "json" };
 import { convertPDFToImages, downloadPDF } from "../../utils/noticeFetch.js";

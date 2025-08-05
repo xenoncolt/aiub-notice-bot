@@ -1,4 +1,4 @@
-import { ButtonBuilder, ComponentBuilder, ContainerBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder, SectionBuilder, SeparatorBuilder, SeparatorSpacingSize, TextDisplayBuilder, ThumbnailBuilder } from "discord.js";
+import { ContainerBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder, SeparatorBuilder, SeparatorSpacingSize, TextDisplayBuilder } from "discord.js";
 
 export function noticeComponentV2(title: string, desc: string, full_desc: string | undefined, img_urls: string[], date: string): ContainerBuilder {
     const container = new ContainerBuilder();

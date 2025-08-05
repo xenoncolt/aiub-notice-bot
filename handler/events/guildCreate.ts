@@ -1,4 +1,4 @@
-import { ButtonBuilder, ButtonStyle, ChannelType, Client, ContainerBuilder, EmbedBuilder, Events, Guild, MessageFlags, SectionBuilder, SeparatorBuilder, SeparatorSpacingSize, StringSelectMenuBuilder, TextDisplayBuilder } from "discord.js";
+import { ButtonBuilder, ButtonStyle, ChannelType, ContainerBuilder, EmbedBuilder, Events, Guild, MessageFlags, SectionBuilder, SeparatorBuilder, SeparatorSpacingSize, TextDisplayBuilder } from "discord.js";
 
 export default {
     name: Events.GuildCreate,

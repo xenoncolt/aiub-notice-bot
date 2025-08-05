@@ -180,7 +180,6 @@ function processNode(node: Element, context: any = {}, imageUrls: string[] = [])
                     result += `_(${content})`;
                     break;
                 case 'span':
-                    const style = element.getAttribute('style');
                     const fontSize = element.getAttribute('font-size');
                     const fontWeight = element.getAttribute('font-weight');
                     const color = element.getAttribute('color');

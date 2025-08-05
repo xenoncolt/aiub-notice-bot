@@ -1,16 +1,13 @@
 import { AutocompleteInteraction, ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
-import { readdir } from 'fs/promises';
 import { dirname, join } from 'path';
 import { Command } from '../types/Command';
 import { fileURLToPath } from 'url';
-import PdfParse, {  } from "pdf-parse-new";
 import { SeatPlan } from "../types/SeatPlan";
 import { readFileSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const seat_plan_dir = join(__dirname, '../database/seatplanPDF');
 const seat_plan_path = join(__dirname, '../database/seat-plan.json');
 
 

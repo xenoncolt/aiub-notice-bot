@@ -1,4 +1,4 @@
-import { ActionRowBuilder, APISelectMenuOption, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder, MessageFlags, SelectMenuComponentOptionData, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
+import { ActionRowBuilder, APISelectMenuOption, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, MessageFlags, SelectMenuComponentOptionData, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
 import config from "../config.json" with { type: "json" };
 import { readFileSync } from "fs";
 import { Command } from "../types/Command";

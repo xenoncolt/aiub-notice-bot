@@ -1,4 +1,4 @@
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ChannelType, Client, DiscordAPIError, EmbedBuilder, MessageFlags, NewsChannel, PermissionFlagsBits, TextChannel } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ChannelType, Client, DiscordAPIError, MessageFlags, NewsChannel, PermissionFlagsBits, TextChannel } from "discord.js";
 import { JSDOM } from "jsdom";
 import config from "../config.json" with { type: "json" };
 import { Database, open } from "sqlite";
@@ -40,7 +40,7 @@ export async function fetchNewsEvents(client: Client): Promise<void> {
             const title = news_event.querySelector('.lqd-lp-title a')?.textContent?.trim();
             const short_desc = news_event.querySelector('.lqd-lp-excerpt p')?.textContent?.trim() || "";
             const link_info = news_event.querySelector('.lqd-lp-title a')?.getAttribute('href');
-            const time_element = news_event.parentElement?.querySelector('time');
+            // const time_element = news_event.parentElement?.querySelector('time');
             // const day = time_element?.querySelector('.day')?.textContent || "";
             // const month = time_element?.querySelector('.month')?.textContent || "";
             // const year = time_element?.querySelector('.year')?.textContent || "";

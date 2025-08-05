@@ -1,4 +1,4 @@
-import { ActionRowBuilder, Client, PermissionFlagsBits, StringSelectMenuBuilder, TextChannel, EmbedBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuOptionBuilder, DiscordAPIError, NewsChannel, ChannelType, AttachmentBuilder, MessageFlags, ContainerBuilder } from "discord.js";
+import { ActionRowBuilder, Client, PermissionFlagsBits, StringSelectMenuBuilder, TextChannel, ButtonBuilder, ButtonStyle, StringSelectMenuOptionBuilder, DiscordAPIError, NewsChannel, ChannelType, AttachmentBuilder, MessageFlags } from "discord.js";
 import sqlite3 from "sqlite3";
 import { Database, open } from "sqlite";
 import { JSDOM } from "jsdom";
@@ -58,8 +58,6 @@ export async function fetchNotice(client: Client): Promise<void> {
         const notices = document.querySelectorAll('.notification');
         let notice_data = readFileSync('./database/notice.json', 'utf-8');
         let notice_object = JSON.parse(notice_data) || [];
-
-        let lastNotice: string = notice_object[notice_object.length - 1]?.title || "None";
 
         let new_notices = [];
 

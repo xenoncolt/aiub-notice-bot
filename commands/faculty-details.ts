@@ -1,11 +1,8 @@
 import axios from "axios";
-import { ActionRowBuilder, AttachmentBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Client, EmbedBuilder, TextChannel } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, AutocompleteInteraction, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 import config from "../config.json" with { type: "json" };
 import { FacultyProfile, tempFP } from "../types/FacultyProfile.js";
-import path, { resolve } from "path";
-import { createWriteStream, mkdirSync } from "fs";
 import { Command } from "../types/Command";
-import { fileURLToPath } from "url";
 import { downloadImage } from "../helper/downloadImage.js";
 
 

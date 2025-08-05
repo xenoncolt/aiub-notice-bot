@@ -2,7 +2,6 @@ import path from "path";
 import { ExtendedClient } from "../types/ExtendedClient.js";
 import { readdirSync } from "fs";
 import { pathToFileURL, fileURLToPath } from "url";
-import { Command } from "../types/Command.js";
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v10';
 import config from "../config.json" with { type: "json" };
