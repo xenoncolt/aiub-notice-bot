@@ -1,7 +1,7 @@
 import { AttachmentBuilder, ButtonBuilder, ComponentBuilder, ContainerBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder, SectionBuilder, SeparatorBuilder, SeparatorSpacingSize, TextDisplayBuilder, ThumbnailBuilder } from "discord.js";
 import { downloadImage } from "./downloadImage.js";
 
-export async function noticeComponentV2(title: string, desc: string, full_desc: string | undefined, img_urls: string[], date: string): Promise<{ container: ContainerBuilder, attachment?: AttachmentBuilder}> {
+export async function noticeComponentV2(title: string, desc: string, full_desc: string | undefined, img_urls: string[], date: string): Promise<{ container: ContainerBuilder, attachments: AttachmentBuilder[] }> {
     const container = new ContainerBuilder();
 
     const title_text = `# ${title}\nPublished Date: ${date}`;
@@ -16,7 +16,7 @@ export async function noticeComponentV2(title: string, desc: string, full_desc: 
 
     const title_section_text = new TextDisplayBuilder().setContent(title_text);
     container.addTextDisplayComponents(title_section_text);
-
+``
     container.addSeparatorComponents(
         new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Large)
     );
@@ -37,7 +37,7 @@ export async function noticeComponentV2(title: string, desc: string, full_desc: 
         )
     );
 
-    let attachment: AttachmentBuilder | undefined;
+    let attachments: AttachmentBuilder[] = [];
 
     if (img_urls.length > 0) {
         let media_builder = new MediaGalleryBuilder();
@@ -46,11 +46,11 @@ export async function noticeComponentV2(title: string, desc: string, full_desc: 
         //     const sent_msg = await _channel.send({ files: [attachment] });
         //     img_urls.push(sent_msg.attachments.first()!.url);
         // }
-        const img_paths = await downloadImage(img_urls) as string[];
-        for (const [index, img_path] of img_paths.entries()) {
+        
+        for (const [index, img_url] of img_urls.entries()) {
             const img_name = `image-${index + 1}.png`;
-            
-            attachment = new AttachmentBuilder(img_path, { name: img_name });
+
+            attachments.push(new AttachmentBuilder(img_url, { name: img_name }))
             media_builder.addItems(
                 new MediaGalleryItemBuilder().setURL(`attachment://${img_name}`)
             );
@@ -68,5 +68,5 @@ export async function noticeComponentV2(title: string, desc: string, full_desc: 
     );
     }
 
-    return { container, attachment };
+    return { container, attachments };
 }

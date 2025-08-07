@@ -72,6 +72,8 @@ export async function fetchNewsEvents(client: Client): Promise<void> {
 
                     img_urls = imageUrls.slice(0, 10);
 
+                    const img_paths: string[] = await downloadImage(img_urls) as string[];
+
                     // for (const imgUrl of imageUrls) {
                     //     const img_path = await downloadImage(imgUrl);
                     //     img_paths.push(img_path as Buffer);
@@ -168,7 +170,7 @@ export async function fetchNewsEvents(client: Client): Promise<void> {
                                     //     .setURL(link)
                                     //     .setTimestamp()
 
-                                    const { container, attachment }  = await noticeComponentV2(title!, short_desc, desc, img_urls, published_date);
+                                    const { container, attachments }  = await noticeComponentV2(title!, short_desc, desc, img_paths, published_date);
 
                                     const link_btn = new ActionRowBuilder<ButtonBuilder>()
                                         .addComponents(
@@ -180,8 +182,8 @@ export async function fetchNewsEvents(client: Client): Promise<void> {
                                         );
 
                                     try {
-                                        if (attachment) {
-                                            await channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2, files: [attachment] });
+                                        if (attachments.length > 0) {
+                                            await channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2, files: attachments });
                                         } else {
                                             await channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
                                         }
@@ -224,7 +226,7 @@ export async function fetchNewsEvents(client: Client): Promise<void> {
                                         //     .setURL(link)
                                         //     .setFooter({ text: `\'/dm reset\' to stop sending notice` });
 
-                                        const { container, attachment } = await noticeComponentV2(title!, short_desc, desc, img_urls, published_date);
+                                        const { container, attachments } = await noticeComponentV2(title!, short_desc, desc, img_paths, published_date);
 
                                         const link_btn = new ActionRowBuilder<ButtonBuilder>()
                                             .addComponents(
@@ -235,8 +237,8 @@ export async function fetchNewsEvents(client: Client): Promise<void> {
                                                     .setEmoji("📰")
                                             );
 
-                                            if (attachment) {
-                                                await dm_channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2, files: [attachment] });
+                                            if (attachments.length > 0) {
+                                                await dm_channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2, files: attachments });
                                             } else {
                                                 await dm_channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
                                             }

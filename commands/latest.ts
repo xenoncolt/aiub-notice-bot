@@ -58,7 +58,7 @@ export default {
                 //     }
                 // }
 
-                const { container, attachment } = await noticeComponentV2(latest_notice.title, latest_notice.desc, latest_notice.full_desc, latest_notice.img_urls, `${latest_notice.day} ${latest_notice.month} ${latest_notice.year}`);
+                const { container, attachments } = await noticeComponentV2(latest_notice.title, latest_notice.desc, latest_notice.full_desc, latest_notice.img_urls, `${latest_notice.day} ${latest_notice.month} ${latest_notice.year}`);
 
                 const link_btn = new ActionRowBuilder<ButtonBuilder>()
                     .addComponents(
@@ -78,10 +78,10 @@ export default {
                     
                     const menu = new ActionRowBuilder<StringSelectMenuBuilder>()
                         .addComponents(select_menu);
-                    if (attachment) await interaction.reply({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2, files: [attachment] });
+                    if (attachments.length > 0) await interaction.reply({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2, files: attachments });
                     else await interaction.reply({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2 });
                 } else {
-                    if (attachment) await interaction.reply({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2, files: [attachment] });
+                    if (attachments.length > 0) await interaction.reply({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2, files: attachments });
                     else await interaction.reply({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
                 }
             } else if (text === 'news') {
@@ -89,7 +89,7 @@ export default {
                 const latest_news = await news_db.get(`SELECT * FROM aiub ORDER BY ROWID DESC LIMIT 1`);
 
                 if (latest_news) {
-                    const { container, attachment } = await noticeComponentV2(latest_news.title, '', latest_news.desc, latest_news.img_urls, latest_news.published_date);
+                    const { container, attachments } = await noticeComponentV2(latest_news.title, '', latest_news.desc, latest_news.img_urls, latest_news.published_date);
 
                     const link_btn = new ActionRowBuilder<ButtonBuilder>()
                     .addComponents(
@@ -100,7 +100,7 @@ export default {
                             .setEmoji("📰")
                     );
 
-                    if (attachment) await interaction.reply({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2, files: [attachment] });
+                    if (attachments.length > 0) await interaction.reply({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2, files: attachments });
                     else await interaction.reply({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
                 }
             }

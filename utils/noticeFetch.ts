@@ -106,6 +106,8 @@ export async function fetchNotice(client: Client): Promise<void> {
 
                     img_urls = imageUrls.slice(0, 10);
 
+                    const img_paths: string[] = await downloadImage(img_urls) as string[];
+
                     // for (const imgUrl of imageUrls) {
                     //     const img_path = await downloadImage(imgUrl);
                     //     imgPaths.push(img_path);
@@ -127,260 +129,201 @@ export async function fetchNotice(client: Client): Promise<void> {
                     // }
 
                     if (textDescContent.length > 100) {
-                            full_desc = textDescContent;
+                        full_desc = textDescContent;
                     }
-                }
 
-                let pdf_options: { label: string, description: string, value: string }[] = [];
-                if (pdf_links.length > 0) {
-                    pdf_options = Array.from(pdf_links).map((pdf, index) => ({
-                        label: `PDF ${index + 1}`.slice(0, 100),
-                        description: pdf.textContent?.trim().slice(0, 100)!,
-                        value: `${pdf.getAttribute('href')}`.slice(0, 100)
-                    }));
-                }
 
-                const new_notice = {
-                    title,
-                    desc,
-                    full_desc,
-                    link_info,
-                    img_urls,
-                    day,
-                    month,
-                    year,
-                    pdf_options: pdf_options
-                };
-
-                new_notices.push(new_notice);
-
-                // Save seat plan pdf
-                if (title.includes("Seat Plan") && title.includes("Exam")) {
-                    console.log(`Found a seat plan notice: ${title}`);
-
-                    await clearDir(seat_plan_dir);
-                    for (const pdf of pdf_options) {
-                        const pdf_url = `${config.url}${pdf.value}`;
-                        try {
-                            const pdf_response = await fetch(pdf_url);
-                            if (!pdf_response.ok) throw new Error(`Failed to fetch PDF from ${pdf_url}`);
-
-                            const pdf_buffer = await pdf_response.arrayBuffer();
-                            const pdf_path = path.join(seat_plan_dir, path.basename(pdf.value));
-                            await writeFile(pdf_path, Buffer.from(pdf_buffer));
-                            console.log(`Downloaded PDF: ${pdf_path}`);
-                            convertSeatPlanPDFsToJson();
-                        } catch (e) {
-                            console.error(`Failed to save PDF "${pdf.label}" from ${pdf_url}: `, e);
-                        }
+                    let pdf_options: { label: string, description: string, value: string }[] = [];
+                    if (pdf_links.length > 0) {
+                        pdf_options = Array.from(pdf_links).map((pdf, index) => ({
+                            label: `PDF ${index + 1}`.slice(0, 100),
+                            description: pdf.textContent?.trim().slice(0, 100)!,
+                            value: `${pdf.getAttribute('href')}`.slice(0, 100)
+                        }));
                     }
-                }
 
-                for (const guild of client.guilds.cache.values()) {
-                    // Fetch channel ID from database
-                    const rows = await notice_db.all('SELECT channel_id FROM channel WHERE guild_id = ?', guild.id);
+                    const new_notice = {
+                        title,
+                        desc,
+                        full_desc,
+                        link_info,
+                        img_urls,
+                        day,
+                        month,
+                        year,
+                        pdf_options: pdf_options
+                    };
 
-                    console.log(title);
+                    new_notices.push(new_notice);
 
-                    if (rows.length > 0) {
-                        for (const row of rows) {
-                            const channel_ID = row.channel_id;
-                            const channel = client.channels.cache.get(channel_ID);
+                    // Save seat plan pdf
+                    if (title.includes("Seat Plan") && title.includes("Exam")) {
+                        console.log(`Found a seat plan notice: ${title}`);
 
-                            if (!(channel instanceof TextChannel) && !(channel instanceof NewsChannel)) {
-                                const sql = `DELETE FROM channel WHERE channel_id = ?`;
-                                try {
-                                    const result = await notice_db.run(sql, [channel_ID]);
-
-                                    // The result object contains the 'changes' property, which is the number of row affected
-                                    if (result.changes! > 0) {
-                                        console.log(`Row(s) deleted: ${result.changes}`);
-                                    } else {
-                                        console.log(`No row(s) deleted for channel ID: ${channel_ID}`);
-                                    }
-                                } catch (error) {
-                                    console.error(`Error deleting channel with ID ${channel_ID}: `, (error as Error).message);
-                                }
-                                continue;
-                            }
-
-                            // if (channel && channel instanceof TextChannel) {
-                            const permission = channel.permissionsFor(client.user!);
-
-                            // I have to change it later (&& to ||)
-                            if (!permission?.has(PermissionFlagsBits.ViewChannel)) {
-                                const sql = `DELETE FROM channel WHERE channel_id = ?`;
-                                try {
-                                    const result = await notice_db.run(sql, [channel_ID]);
-
-                                    // The result object contains the 'changes' property, which is the number of row affected
-                                    if (result.changes! > 0) {
-                                        console.log(`Row(s) deleted: ${result.changes}`);
-                                    } else {
-                                        console.log(`No row(s) deleted for channel ID: ${channel_ID}`);
-                                    }
-                                } catch (error) {
-                                    console.error(`Error deleting channel with ID ${channel_ID}: `, (error as Error).message);
-                                }
-                                continue;
-                            }
-
-                            if (permission.has([PermissionFlagsBits.ManageRoles, PermissionFlagsBits.ManageChannels])) {
-                                try {
-                                    if (!permission?.has(PermissionFlagsBits.SendMessages) || !permission.has(PermissionFlagsBits.EmbedLinks)) {
-                                        await channel.permissionOverwrites.create(client.user!, { SendMessages: true, EmbedLinks: true });
-                                        await channel.permissionOverwrites.create(channel.guild.roles.everyone, { SendMessages: false });
-                                    }
-                                } catch (permError) {
-                                    console.log(`Cannot update permissions in channel ${channel.name} (${channel.id}): ${permError}`)
-                                }
-                            } else if (!permission.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks])) {
-                                const warn_guild = client.guilds.cache.get(guild.id);
-                                if (warn_guild) {
-                                    const bot = warn_guild.members.me;
-                                    if (!bot) return;
-                                    let default_channel = warn_guild.channels.cache.find(
-                                        (target_channel) =>
-                                            target_channel.type === ChannelType.GuildText && target_channel.permissionsFor(bot).has(PermissionFlagsBits.SendMessages)
-                                    );
-
-                                    if (!default_channel) return;
-
-                                    if (default_channel && default_channel instanceof TextChannel) {
-                                        default_channel.send(`I don\'t have permission to Send Message or Embed Link or Manage Role to <#${channel_ID}> channel. As a result I can't send new notice.  If you don\'t know how to give me that permission then just invite me again (Click to my profile -> Add App -> Add to server).`);
-                                    }
-                                }
-                                continue;
-                            }
-
-
-                            // } else  {
-                            //     const sql = `DELETE FROM channel WHERE channel_id = ?`;
-                            //     try {
-                            //         const result = await notice_db.run(sql, [channel_ID]);
-
-                            //         // The result object contains the 'changes' property, which is the number of row affected
-                            //         if (result.changes! > 0) {
-                            //             console.log(`Row(s) deleted: ${result.changes}`);
-                            //         } else {
-                            //             console.log(`No row(s) deleted for channel ID: ${channel_ID}`);
-                            //         }
-                            //     } catch (error) {
-                            //         console.error(`Error deleting channel with ID ${channel_ID}: `, (error as Error).message);
-                            //     }
-                            //     continue;
-                            // }
-
-                            if (channel && (channel instanceof TextChannel || channel instanceof NewsChannel)) {
-                                const formatted_date = `${day} ${month} ${year}`;
-                                const { container, attachment } = await noticeComponentV2(title, desc, full_desc, img_urls, formatted_date);
-
-                                const link_btn = new ActionRowBuilder<ButtonBuilder>()
-                                    .addComponents(
-                                        new ButtonBuilder()
-                                            .setLabel('Details')
-                                            .setStyle(ButtonStyle.Link)
-                                            .setURL(link)
-                                    );
-
-                                if (pdf_options.length > 0) {
-                                    const select_menu = new StringSelectMenuBuilder()
-                                        .setCustomId('select-pdf')
-                                        .setPlaceholder('Select a PDF to send to your DM')
-                                        .addOptions(
-                                            pdf_options.map(option => new StringSelectMenuOptionBuilder(option))
-                                        );
-
-                                    const menu = new ActionRowBuilder<StringSelectMenuBuilder>()
-                                        .addComponents(select_menu);
-
-                                    if (attachment) {
-                                        await channel.send({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2, files: [attachment] });
-                                    } else {
-                                        await channel.send({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2 });
-                                    }
-                                } else {
-                                    if (attachment) {
-                                        await channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2, files: [attachment] });
-                                    } else {
-                                        await channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        console.log('No channels found in the database for the guild');
-                    }
-                }
-
-                // Send to all users that have subscribed
-                const user_rows = await db.all('SELECT notice FROM dm WHERE notice IS NOT NULL');
-                if (user_rows.length > 0) {
-                    for (const user_row of user_rows) {
-                        const user_id = user_row.notice;
-                        const user = await client.users.fetch(user_id).catch(console.error);
-
-                        // If the user can't found, remove from the database
-                        if (!user) {
-                            const sql = `UPDATE dm SET notice = NULL WHERE notice = ?`;
+                        await clearDir(seat_plan_dir);
+                        for (const pdf of pdf_options) {
+                            const pdf_url = `${config.url}${pdf.value}`;
                             try {
-                                const result = await db.run(sql, [user_id]);
+                                const pdf_response = await fetch(pdf_url);
+                                if (!pdf_response.ok) throw new Error(`Failed to fetch PDF from ${pdf_url}`);
 
-                                if (result.changes! > 0) {
-                                    console.log(`User ${user_id} unsubscribe from notice notification.`);
-                                } else {
-                                    console.log(`No changes occurs for USER ID: ${user_id}`);
-                                }
-                            } catch (error) {
-                                console.error(`Error while updating dm notice for ${user_id}: `, (error as Error).message);
+                                const pdf_buffer = await pdf_response.arrayBuffer();
+                                const pdf_path = path.join(seat_plan_dir, path.basename(pdf.value));
+                                await writeFile(pdf_path, Buffer.from(pdf_buffer));
+                                console.log(`Downloaded PDF: ${pdf_path}`);
+                                convertSeatPlanPDFsToJson();
+                            } catch (e) {
+                                console.error(`Failed to save PDF "${pdf.label}" from ${pdf_url}: `, e);
                             }
-                            continue;
                         }
+                    }
 
-                        try {
-                            const dm_channel = await user.createDM();
+                    for (const guild of client.guilds.cache.values()) {
+                        // Fetch channel ID from database
+                        const rows = await notice_db.all('SELECT channel_id FROM channel WHERE guild_id = ?', guild.id);
 
-                            if (dm_channel.isSendable()) {
-                                const formatted_date = `${day} ${month} ${year}`;
+                        console.log(title);
 
-                                const {container, attachment} = await noticeComponentV2(title, desc, full_desc, img_urls, formatted_date);
+                        if (rows.length > 0) {
+                            for (const row of rows) {
+                                const channel_ID = row.channel_id;
+                                const channel = client.channels.cache.get(channel_ID);
 
-                                const link_btn = new ActionRowBuilder<ButtonBuilder>()
-                                    .addComponents(
-                                        new ButtonBuilder()
-                                            .setLabel('Details')
-                                            .setStyle(ButtonStyle.Link)
-                                            .setURL(link)
-                                    );
+                                if (!(channel instanceof TextChannel) && !(channel instanceof NewsChannel)) {
+                                    const sql = `DELETE FROM channel WHERE channel_id = ?`;
+                                    try {
+                                        const result = await notice_db.run(sql, [channel_ID]);
 
-                                if (pdf_options.length > 0) {
-                                    const select_menu = new StringSelectMenuBuilder()
-                                        .setCustomId('select-pdf')
-                                        .setPlaceholder('Select a PDF to get as Image')
-                                        .addOptions(
-                                            pdf_options.map(option => new StringSelectMenuOptionBuilder(option))
+                                        // The result object contains the 'changes' property, which is the number of row affected
+                                        if (result.changes! > 0) {
+                                            console.log(`Row(s) deleted: ${result.changes}`);
+                                        } else {
+                                            console.log(`No row(s) deleted for channel ID: ${channel_ID}`);
+                                        }
+                                    } catch (error) {
+                                        console.error(`Error deleting channel with ID ${channel_ID}: `, (error as Error).message);
+                                    }
+                                    continue;
+                                }
+
+                                // if (channel && channel instanceof TextChannel) {
+                                const permission = channel.permissionsFor(client.user!);
+
+                                // I have to change it later (&& to ||)
+                                if (!permission?.has(PermissionFlagsBits.ViewChannel)) {
+                                    const sql = `DELETE FROM channel WHERE channel_id = ?`;
+                                    try {
+                                        const result = await notice_db.run(sql, [channel_ID]);
+
+                                        // The result object contains the 'changes' property, which is the number of row affected
+                                        if (result.changes! > 0) {
+                                            console.log(`Row(s) deleted: ${result.changes}`);
+                                        } else {
+                                            console.log(`No row(s) deleted for channel ID: ${channel_ID}`);
+                                        }
+                                    } catch (error) {
+                                        console.error(`Error deleting channel with ID ${channel_ID}: `, (error as Error).message);
+                                    }
+                                    continue;
+                                }
+
+                                if (permission.has([PermissionFlagsBits.ManageRoles, PermissionFlagsBits.ManageChannels])) {
+                                    try {
+                                        if (!permission?.has(PermissionFlagsBits.SendMessages) || !permission.has(PermissionFlagsBits.EmbedLinks)) {
+                                            await channel.permissionOverwrites.create(client.user!, { SendMessages: true, EmbedLinks: true });
+                                            await channel.permissionOverwrites.create(channel.guild.roles.everyone, { SendMessages: false });
+                                        }
+                                    } catch (permError) {
+                                        console.log(`Cannot update permissions in channel ${channel.name} (${channel.id}): ${permError}`)
+                                    }
+                                } else if (!permission.has([PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks])) {
+                                    const warn_guild = client.guilds.cache.get(guild.id);
+                                    if (warn_guild) {
+                                        const bot = warn_guild.members.me;
+                                        if (!bot) return;
+                                        let default_channel = warn_guild.channels.cache.find(
+                                            (target_channel) =>
+                                                target_channel.type === ChannelType.GuildText && target_channel.permissionsFor(bot).has(PermissionFlagsBits.SendMessages)
                                         );
 
-                                    const menu = new ActionRowBuilder<StringSelectMenuBuilder>()
-                                        .addComponents(select_menu);
+                                        if (!default_channel) return;
 
-                                    if (attachment) {
-                                        await dm_channel.send({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2, files: [attachment] });
-                                    } else {
-                                        await dm_channel.send({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2 });
+                                        if (default_channel && default_channel instanceof TextChannel) {
+                                            default_channel.send(`I don\'t have permission to Send Message or Embed Link or Manage Role to <#${channel_ID}> channel. As a result I can't send new notice.  If you don\'t know how to give me that permission then just invite me again (Click to my profile -> Add App -> Add to server).`);
+                                        }
                                     }
-                                } else {
-                                    if (attachment) {
-                                        await dm_channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2, files: [attachment] });
+                                    continue;
+                                }
+
+
+                                // } else  {
+                                //     const sql = `DELETE FROM channel WHERE channel_id = ?`;
+                                //     try {
+                                //         const result = await notice_db.run(sql, [channel_ID]);
+
+                                //         // The result object contains the 'changes' property, which is the number of row affected
+                                //         if (result.changes! > 0) {
+                                //             console.log(`Row(s) deleted: ${result.changes}`);
+                                //         } else {
+                                //             console.log(`No row(s) deleted for channel ID: ${channel_ID}`);
+                                //         }
+                                //     } catch (error) {
+                                //         console.error(`Error deleting channel with ID ${channel_ID}: `, (error as Error).message);
+                                //     }
+                                //     continue;
+                                // }
+
+                                if (channel && (channel instanceof TextChannel || channel instanceof NewsChannel)) {
+                                    const formatted_date = `${day} ${month} ${year}`;
+                                    const { container, attachments } = await noticeComponentV2(title, desc, full_desc, img_paths, formatted_date);
+
+                                    const link_btn = new ActionRowBuilder<ButtonBuilder>()
+                                        .addComponents(
+                                            new ButtonBuilder()
+                                                .setLabel('Details')
+                                                .setStyle(ButtonStyle.Link)
+                                                .setURL(link)
+                                        );
+
+                                    if (pdf_options.length > 0) {
+                                        const select_menu = new StringSelectMenuBuilder()
+                                            .setCustomId('select-pdf')
+                                            .setPlaceholder('Select a PDF to send to your DM')
+                                            .addOptions(
+                                                pdf_options.map(option => new StringSelectMenuOptionBuilder(option))
+                                            );
+
+                                        const menu = new ActionRowBuilder<StringSelectMenuBuilder>()
+                                            .addComponents(select_menu);
+
+                                        if (attachments.length > 0) {
+                                            await channel.send({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2, files: attachments });
+                                        } else {
+                                            await channel.send({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2 });
+                                        }
                                     } else {
-                                        await dm_channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
+                                        if (attachments.length > 0) {
+                                            await channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2, files: attachments });
+                                        } else {
+                                            await channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
+                                        }
                                     }
                                 }
                             }
-                        } catch (error) {
-                            if (error instanceof DiscordAPIError && error.message.includes('Cannot send messages to this user')) {
-                                console.error(`Cannot send messages to user ${user_id}. Removing from notice database.`);
+                        } else {
+                            console.log('No channels found in the database for the guild');
+                        }
+                    }
 
+                    // Send to all users that have subscribed
+                    const user_rows = await db.all('SELECT notice FROM dm WHERE notice IS NOT NULL');
+                    if (user_rows.length > 0) {
+                        for (const user_row of user_rows) {
+                            const user_id = user_row.notice;
+                            const user = await client.users.fetch(user_id).catch(console.error);
+
+                            // If the user can't found, remove from the database
+                            if (!user) {
                                 const sql = `UPDATE dm SET notice = NULL WHERE notice = ?`;
                                 try {
                                     const result = await db.run(sql, [user_id]);
@@ -390,16 +333,76 @@ export async function fetchNotice(client: Client): Promise<void> {
                                     } else {
                                         console.log(`No changes occurs for USER ID: ${user_id}`);
                                     }
-                                } catch (db_error) {
-                                    console.error(`Error while updating dm notice for ${user_id}: `, (db_error as Error).message);
+                                } catch (error) {
+                                    console.error(`Error while updating dm notice for ${user_id}: `, (error as Error).message);
                                 }
-                            } else {
-                                console.error(`Failed to send DM to user ${user_id}:`, error);
+                                continue;
+                            }
+
+                            try {
+                                const dm_channel = await user.createDM();
+
+                                if (dm_channel.isSendable()) {
+                                    const formatted_date = `${day} ${month} ${year}`;
+
+                                    const { container, attachments } = await noticeComponentV2(title, desc, full_desc, img_paths, formatted_date);
+
+                                    const link_btn = new ActionRowBuilder<ButtonBuilder>()
+                                        .addComponents(
+                                            new ButtonBuilder()
+                                                .setLabel('Details')
+                                                .setStyle(ButtonStyle.Link)
+                                                .setURL(link)
+                                        );
+
+                                    if (pdf_options.length > 0) {
+                                        const select_menu = new StringSelectMenuBuilder()
+                                            .setCustomId('select-pdf')
+                                            .setPlaceholder('Select a PDF to get as Image')
+                                            .addOptions(
+                                                pdf_options.map(option => new StringSelectMenuOptionBuilder(option))
+                                            );
+
+                                        const menu = new ActionRowBuilder<StringSelectMenuBuilder>()
+                                            .addComponents(select_menu);
+
+                                        if (attachments.length > 0) {
+                                            await dm_channel.send({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2, files: attachments });
+                                        } else {
+                                            await dm_channel.send({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2 });
+                                        }
+                                    } else {
+                                        if (attachments.length > 0) {
+                                            await dm_channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2, files: attachments });
+                                        } else {
+                                            await dm_channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
+                                        }
+                                    }
+                                }
+                            } catch (error) {
+                                if (error instanceof DiscordAPIError && error.message.includes('Cannot send messages to this user')) {
+                                    console.error(`Cannot send messages to user ${user_id}. Removing from notice database.`);
+
+                                    const sql = `UPDATE dm SET notice = NULL WHERE notice = ?`;
+                                    try {
+                                        const result = await db.run(sql, [user_id]);
+
+                                        if (result.changes! > 0) {
+                                            console.log(`User ${user_id} unsubscribe from notice notification.`);
+                                        } else {
+                                            console.log(`No changes occurs for USER ID: ${user_id}`);
+                                        }
+                                    } catch (db_error) {
+                                        console.error(`Error while updating dm notice for ${user_id}: `, (db_error as Error).message);
+                                    }
+                                } else {
+                                    console.error(`Failed to send DM to user ${user_id}:`, error);
+                                }
                             }
                         }
+                    } else {
+                        console.log(`No users found in the database who subscribe for notices`);
                     }
-                } else {
-                    console.log(`No users found in the database who subscribe for notices`);
                 }
             }
         }
