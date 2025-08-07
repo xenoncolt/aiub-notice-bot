@@ -1,6 +1,7 @@
-import { ButtonBuilder, ComponentBuilder, ContainerBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder, SectionBuilder, SeparatorBuilder, SeparatorSpacingSize, TextDisplayBuilder, ThumbnailBuilder } from "discord.js";
+import { AttachmentBuilder, ButtonBuilder, ComponentBuilder, ContainerBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder, SectionBuilder, SeparatorBuilder, SeparatorSpacingSize, TextDisplayBuilder, ThumbnailBuilder } from "discord.js";
+import { downloadImage } from "./downloadImage.js";
 
-export function noticeComponentV2(title: string, desc: string, full_desc: string | undefined, img_urls: string[], date: string): ContainerBuilder {
+export async function noticeComponentV2(title: string, desc: string, full_desc: string | undefined, img_urls: string[], date: string): Promise<{ container: ContainerBuilder, attachment?: AttachmentBuilder}> {
     const container = new ContainerBuilder();
 
     const title_text = `# ${title}\nPublished Date: ${date}`;
@@ -36,12 +37,22 @@ export function noticeComponentV2(title: string, desc: string, full_desc: string
         )
     );
 
+    let attachment: AttachmentBuilder | undefined;
 
     if (img_urls.length > 0) {
         let media_builder = new MediaGalleryBuilder();
-        for (const img_url of img_urls) {
+        // for (const [index, imgPath] of img_paths.entries()) {
+        //     const attachment = new AttachmentBuilder(imgPath, { name: `image-${index + 1}.png` });
+        //     const sent_msg = await _channel.send({ files: [attachment] });
+        //     img_urls.push(sent_msg.attachments.first()!.url);
+        // }
+        const img_paths = await downloadImage(img_urls) as string[];
+        for (const [index, img_path] of img_paths.entries()) {
+            const img_name = `image-${index + 1}.png`;
+            
+            attachment = new AttachmentBuilder(img_path, { name: img_name });
             media_builder.addItems(
-                new MediaGalleryItemBuilder().setURL(img_url)
+                new MediaGalleryItemBuilder().setURL(`attachment://${img_name}`)
             );
         }
         container.addMediaGalleryComponents(media_builder);
@@ -57,5 +68,5 @@ export function noticeComponentV2(title: string, desc: string, full_desc: string
     );
     }
 
-    return container;
+    return { container, attachment };
 }

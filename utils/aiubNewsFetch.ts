@@ -68,20 +68,22 @@ export async function fetchNewsEvents(client: Client): Promise<void> {
                     const txtDescHTML = isContentDiv.innerHTML;
                     const { content: textDescContent, imageUrls } = htmlToDiscordFormat(txtDescHTML);
 
-                    const img_paths: string[] = await downloadImage(imageUrls) as string[];
+                    // const img_paths: string[] = await downloadImage(imageUrls) as string[];
+
+                    img_urls = imageUrls.slice(0, 10);
 
                     // for (const imgUrl of imageUrls) {
                     //     const img_path = await downloadImage(imgUrl);
                     //     img_paths.push(img_path as Buffer);
                     // }
 
-                    const _channel = client.channels.cache.get("1244675616306102402") as TextChannel;
+                    // const _channel = client.channels.cache.get("1244675616306102402") as TextChannel;
 
-                    for (const imgPath of img_paths) {
-                        const attachment = new AttachmentBuilder(imgPath);
-                        const sent_msg = await _channel.send({ files: [attachment] });
-                        img_urls.push(sent_msg.attachments.first()!.url);
-                    }
+                    // for (const imgPath of img_paths) {
+                    //     const attachment = new AttachmentBuilder(imgPath);
+                    //     const sent_msg = await _channel.send({ files: [attachment] });
+                    //     img_urls.push(sent_msg.attachments.first()!.url);
+                    // }
 
                     if (textDescContent.length > 100) {
                         desc = textDescContent;
@@ -166,7 +168,7 @@ export async function fetchNewsEvents(client: Client): Promise<void> {
                                     //     .setURL(link)
                                     //     .setTimestamp()
 
-                                    const container  = noticeComponentV2(title!, short_desc, desc, img_urls, published_date);
+                                    const { container, attachment }  = await noticeComponentV2(title!, short_desc, desc, img_urls, published_date);
 
                                     const link_btn = new ActionRowBuilder<ButtonBuilder>()
                                         .addComponents(
@@ -178,7 +180,11 @@ export async function fetchNewsEvents(client: Client): Promise<void> {
                                         );
 
                                     try {
-                                        await channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
+                                        if (attachment) {
+                                            await channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2, files: [attachment] });
+                                        } else {
+                                            await channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
+                                        }
                                         all_deliveries_successful.push(true);
                                     } catch (error) {
                                         all_deliveries_successful.push(false);
@@ -218,7 +224,7 @@ export async function fetchNewsEvents(client: Client): Promise<void> {
                                         //     .setURL(link)
                                         //     .setFooter({ text: `\'/dm reset\' to stop sending notice` });
 
-                                        const container = noticeComponentV2(title!, short_desc, desc, img_urls, published_date);
+                                        const { container, attachment } = await noticeComponentV2(title!, short_desc, desc, img_urls, published_date);
 
                                         const link_btn = new ActionRowBuilder<ButtonBuilder>()
                                             .addComponents(
@@ -229,8 +235,12 @@ export async function fetchNewsEvents(client: Client): Promise<void> {
                                                     .setEmoji("📰")
                                             );
 
-                                        await dm_channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
-                                        all_deliveries_successful.push(true);
+                                            if (attachment) {
+                                                await dm_channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2, files: [attachment] });
+                                            } else {
+                                                await dm_channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
+                                            }
+                                            all_deliveries_successful.push(true);
                                     }
                                 } catch (error) {
                                     if (error instanceof DiscordAPIError && error.message.includes('Cannot send messages to this user')) {

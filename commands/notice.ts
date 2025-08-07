@@ -50,7 +50,7 @@ export default {
             //         }
             //     }
 
-            const container = noticeComponentV2(notice!.title, notice!.desc, notice?.full_desc, notice!.img_urls as string[], `${notice?.day} ${notice?.month} ${notice?.year}`);
+            const { container, attachment } = await noticeComponentV2(notice!.title, notice!.desc, notice?.full_desc, notice!.img_urls as string[], `${notice?.day} ${notice?.month} ${notice?.year}`);
 
             const link_btn = new ActionRowBuilder<ButtonBuilder>()
                 .addComponents(
@@ -71,9 +71,11 @@ export default {
                 const menu = new ActionRowBuilder<StringSelectMenuBuilder>()
                     .addComponents(select_menu);
                 
-                await interaction.reply({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2 });
+                if (attachment) await interaction.reply({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2, files: [attachment] });
+                else await interaction.reply({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2 });
             } else {
-                await interaction.reply({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
+                if (attachment) await interaction.reply({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2, files: [attachment] });
+                else await interaction.reply({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
             }
         } catch (error) {
             console.error(error);

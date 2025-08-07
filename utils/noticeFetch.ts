@@ -102,7 +102,9 @@ export async function fetchNotice(client: Client): Promise<void> {
                     const textDescHtml = isContentDiv.innerHTML;
                     const { content: textDescContent, imageUrls } = htmlToDiscordFormat(textDescHtml);
 
-                    const img_paths = await downloadImage(imageUrls) as string[];
+                    // const img_paths = await downloadImage(imageUrls) as string[];
+
+                    img_urls = imageUrls.slice(0, 10);
 
                     // for (const imgUrl of imageUrls) {
                     //     const img_path = await downloadImage(imgUrl);
@@ -110,13 +112,13 @@ export async function fetchNotice(client: Client): Promise<void> {
                     // }
 
 
-                    const _channel = client.channels.cache.get("1244675616306102402") as TextChannel;
+                    // const _channel = client.channels.cache.get("1244675616306102402") as TextChannel;
 
-                    for (const [index, imgPath] of img_paths.entries()) {
-                        const attachment = new AttachmentBuilder(imgPath, { name: `image-${index + 1}.png` });
-                        const sent_msg = await _channel.send({ files: [attachment] });
-                        img_urls.push(sent_msg.attachments.first()!.url);
-                    }
+                    // for (const [index, imgPath] of img_paths.entries()) {
+                    //     const attachment = new AttachmentBuilder(imgPath, { name: `image-${index + 1}.png` });
+                    //     const sent_msg = await _channel.send({ files: [attachment] });
+                    //     img_urls.push(sent_msg.attachments.first()!.url);
+                    // }
 
                     // if (textDescContent!.length > 100 && textDescContent!.length < 4000) {
                     //     full_desc = textDescContent;
@@ -271,7 +273,7 @@ export async function fetchNotice(client: Client): Promise<void> {
 
                             if (channel && (channel instanceof TextChannel || channel instanceof NewsChannel)) {
                                 const formatted_date = `${day} ${month} ${year}`;
-                                const container = noticeComponentV2(title, desc, full_desc, img_urls, formatted_date);
+                                const { container, attachment } = await noticeComponentV2(title, desc, full_desc, img_urls, formatted_date);
 
                                 const link_btn = new ActionRowBuilder<ButtonBuilder>()
                                     .addComponents(
@@ -292,9 +294,17 @@ export async function fetchNotice(client: Client): Promise<void> {
                                     const menu = new ActionRowBuilder<StringSelectMenuBuilder>()
                                         .addComponents(select_menu);
 
-                                    await channel.send({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2 });
+                                    if (attachment) {
+                                        await channel.send({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2, files: [attachment] });
+                                    } else {
+                                        await channel.send({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2 });
+                                    }
                                 } else {
-                                    await channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
+                                    if (attachment) {
+                                        await channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2, files: [attachment] });
+                                    } else {
+                                        await channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
+                                    }
                                 }
                             }
                         }
@@ -333,7 +343,7 @@ export async function fetchNotice(client: Client): Promise<void> {
                             if (dm_channel.isSendable()) {
                                 const formatted_date = `${day} ${month} ${year}`;
 
-                                const container = noticeComponentV2(title, desc, full_desc, img_urls, formatted_date);
+                                const {container, attachment} = await noticeComponentV2(title, desc, full_desc, img_urls, formatted_date);
 
                                 const link_btn = new ActionRowBuilder<ButtonBuilder>()
                                     .addComponents(
@@ -354,9 +364,17 @@ export async function fetchNotice(client: Client): Promise<void> {
                                     const menu = new ActionRowBuilder<StringSelectMenuBuilder>()
                                         .addComponents(select_menu);
 
-                                    await dm_channel.send({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2 });
+                                    if (attachment) {
+                                        await dm_channel.send({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2, files: [attachment] });
+                                    } else {
+                                        await dm_channel.send({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2 });
+                                    }
                                 } else {
-                                    await dm_channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
+                                    if (attachment) {
+                                        await dm_channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2, files: [attachment] });
+                                    } else {
+                                        await dm_channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
+                                    }
                                 }
                             }
                         } catch (error) {

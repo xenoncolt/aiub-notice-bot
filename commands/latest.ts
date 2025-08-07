@@ -3,6 +3,10 @@ import config from "../config.json" with { type: "json" };
 import { readFileSync } from "fs";
 import { Command } from "../types/Command";
 import { noticeComponentV2 } from "../helper/convertComponentV2.js";
+import { newsEventsDB } from "../schema/aiubNews.js";
+import { title } from "process";
+
+const news_db = await newsEventsDB();
 
 export default {
     name: 'latest',
@@ -54,7 +58,7 @@ export default {
                 //     }
                 // }
 
-                const container = noticeComponentV2(latest_notice.title, latest_notice.desc, latest_notice.full_desc, latest_notice.img_urls, `${latest_notice.day} ${latest_notice.month} ${latest_notice.year}`);
+                const { container, attachment } = await noticeComponentV2(latest_notice.title, latest_notice.desc, latest_notice.full_desc, latest_notice.img_urls, `${latest_notice.day} ${latest_notice.month} ${latest_notice.year}`);
 
                 const link_btn = new ActionRowBuilder<ButtonBuilder>()
                     .addComponents(
@@ -74,12 +78,31 @@ export default {
                     
                     const menu = new ActionRowBuilder<StringSelectMenuBuilder>()
                         .addComponents(select_menu);
-                    await interaction.reply({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2 });
+                    if (attachment) await interaction.reply({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2, files: [attachment] });
+                    else await interaction.reply({ components: [container, link_btn, menu], flags: MessageFlags.IsComponentsV2 });
                 } else {
-                    await interaction.reply({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
+                    if (attachment) await interaction.reply({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2, files: [attachment] });
+                    else await interaction.reply({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
                 }
             } else if (text === 'news') {
-                await interaction.reply('News is not available yet.');
+                // await interaction.reply('News is not available yet.');
+                const latest_news = await news_db.get(`SELECT * FROM aiub ORDER BY ROWID DESC LIMIT 1`);
+
+                if (latest_news) {
+                    const { container, attachment } = await noticeComponentV2(latest_news.title, '', latest_news.desc, latest_news.img_urls, latest_news.published_date);
+
+                    const link_btn = new ActionRowBuilder<ButtonBuilder>()
+                    .addComponents(
+                        new ButtonBuilder()
+                            .setLabel('Details')
+                            .setStyle(ButtonStyle.Link)
+                            .setURL(config.url+latest_news.link_info)
+                            .setEmoji("📰")
+                    );
+
+                    if (attachment) await interaction.reply({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2, files: [attachment] });
+                    else await interaction.reply({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
+                }
             }
         } catch (error) {
             console.error(error);
