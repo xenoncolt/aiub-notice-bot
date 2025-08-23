@@ -30,4 +30,12 @@ client.once(Events.ClientReady, async () => {
     await registerSlashCommands(client);
 });
 
+client.on(Events.Debug, (info) => {
+    console.log(info);
+});
+
+client.on(Events.Error, (error) => {
+    console.error(error);
+});
+
 client.login(process.env.TOKEN);
