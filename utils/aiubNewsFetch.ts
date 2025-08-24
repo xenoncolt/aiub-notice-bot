@@ -40,7 +40,7 @@ export async function fetchNewsEvents(client: Client): Promise<void> {
             const title = news_event.querySelector('.lqd-lp-title a')?.textContent?.trim();
             const short_desc = news_event.querySelector('.lqd-lp-excerpt p')?.textContent?.trim() || "";
             const link_info = news_event.querySelector('.lqd-lp-title a')?.getAttribute('href');
-            const time_element = news_event.parentElement?.querySelector('time');
+            // const time_element = news_event.parentElement?.querySelector('time');
             // const day = time_element?.querySelector('.day')?.textContent || "";
             // const month = time_element?.querySelector('.month')?.textContent || "";
             // const year = time_element?.querySelector('.year')?.textContent || "";
@@ -70,7 +70,15 @@ export async function fetchNewsEvents(client: Client): Promise<void> {
 
                     // const img_paths: string[] = await downloadImage(imageUrls) as string[];
 
-                    img_urls = imageUrls.slice(0, 10);
+                    img_urls = imageUrls.filter(url => {
+                        try {
+                            new URL(url);
+                            return true;
+                        } catch {
+                            console.log(`Invalid Url: ${url}`);
+                            return false;
+                        }
+                    }).slice(0, 10);
 
                     const img_paths: string[] = await downloadImage(img_urls) as string[];
 
@@ -286,6 +294,6 @@ export async function fetchNewsEvents(client: Client): Promise<void> {
             }
         }
     } catch (error) {
-        console.error('Failed to fetch notices:', error)
+        console.error('Failed to fetch news:', error)
     }
 }

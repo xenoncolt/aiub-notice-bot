@@ -104,7 +104,15 @@ export async function fetchNotice(client: Client): Promise<void> {
 
                     // const img_paths = await downloadImage(imageUrls) as string[];
 
-                    img_urls = imageUrls.slice(0, 10);
+                    img_urls = imageUrls.filter(url => {
+                        try {
+                            new URL(url);
+                            return true;
+                        } catch {
+                            console.log(`Invalid Url: ${url}`);
+                            return false;
+                        }
+                    }).slice(0, 10);
 
                     const img_paths: string[] = await downloadImage(img_urls) as string[];
 
