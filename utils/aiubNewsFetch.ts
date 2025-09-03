@@ -49,7 +49,7 @@ export async function fetchNewsEvents(client: Client): Promise<void> {
 
             const link = `${config.url}${link_info}`;
 
-            const existing_news_event = await news_db.get('SELECT title FROM aiub WHERE title = ?', [title]);
+            // const existing_news_event = await news_db.get('SELECT title FROM aiub WHERE title = ?', [title]);
             const existing_link_info = await news_db.get('SELECT link_info FROM aiub WHERE link_info = ?', [link_info]);
 
             const news_res = await fetch(link);
@@ -61,7 +61,7 @@ export async function fetchNewsEvents(client: Client): Promise<void> {
             let desc = undefined;
             let img_urls: string[] = [];
 
-            if (!existing_news_event || !existing_link_info) {
+            if (!existing_link_info) {
                 const all_deliveries_successful = [];
 
                 if (isContentDiv) {
