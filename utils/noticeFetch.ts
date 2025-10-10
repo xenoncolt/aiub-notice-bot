@@ -256,8 +256,14 @@ export async function fetchNotice(client: Client): Promise<void> {
 
                                         if (!default_channel) return;
 
-                                        if (default_channel && default_channel instanceof TextChannel) {
-                                            default_channel.send(`I don\'t have permission to Send Message or Embed Link or Manage Role to <#${channel_ID}> channel. As a result I can't send new notice.  If you don\'t know how to give me that permission then just invite me again (Click to my profile -> Add App -> Add to server).`);
+                                        try {
+                                            if (default_channel && default_channel instanceof TextChannel) {
+                                                default_channel.send(`I don\'t have permission to Send Message or Embed Link or Manage Role to <#${channel_ID}> channel. As a result I can't send new notice.  If you don\'t know how to give me that permission then just invite me again (Click to my profile -> Add App -> Add to server).`);
+                                            }
+                                        } catch (error) {
+                                            console.error(`Error sending message to default channel: `, (error as Error).message);
+                                            client.users.cache.get(config.owner)?.send(`Error sending message to default channel of guild ${warn_guild.name} (${warn_guild.id}): ${(error as Error).message}`);
+                                            continue;
                                         }
                                     }
                                     continue;
@@ -282,7 +288,8 @@ export async function fetchNotice(client: Client): Promise<void> {
                                 // }
 
                                 if (channel && (channel instanceof TextChannel || channel instanceof NewsChannel)) {
-                                    const formatted_date = `${day} ${month} ${year}`;
+                                    try {
+                                        const formatted_date = `${day} ${month} ${year}`;
                                     const { container, attachments } = await noticeComponentV2(title, desc, full_desc, img_paths, formatted_date);
 
                                     const link_btn = new ActionRowBuilder<ButtonBuilder>()
@@ -315,6 +322,13 @@ export async function fetchNotice(client: Client): Promise<void> {
                                         } else {
                                             await channel.send({ components: [container, link_btn], flags: MessageFlags.IsComponentsV2 });
                                         }
+                                    }
+                                    } catch (error) {
+                                        if (error instanceof DiscordAPIError) {
+                                            console.error(`Discord API error while sending notice: ${error.message}`);
+                                            console.error(`Missing permissions in channel ${channel.name} (${channel.id}). Removing this channel from database.`);
+                                            client.users.cache.get(config.owner)?.send(`Missing permissions in channel ${channel.name} (${channel.id}) of guild ${channel.guild.name} (${channel.guild.id}). I can't send notice to that channel. So, I removed that channel from my database. Please re-add the channel again and give me proper permissions.`);
+                                        } 
                                     }
                                 }
                             }
