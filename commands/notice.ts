@@ -18,7 +18,7 @@ export default {
         }
     ],
 
-    async execute (interaction: ChatInputCommandInteraction) {
+    async execute (interaction: ChatInputCommandInteraction, client: Client) {
         try {
             const searched_title = interaction.options.getString('search');
 
@@ -50,7 +50,7 @@ export default {
             //         }
             //     }
 
-            const { container, attachments } = await noticeComponentV2(notice!.title, notice!.desc, notice?.full_desc, notice!.img_urls as string[], `${notice?.day} ${notice?.month} ${notice?.year}`);
+            const { container, attachments } = await noticeComponentV2(notice!.title, notice!.desc, notice?.full_desc, notice!.img_urls as string[], `${notice?.day} ${notice?.month} ${notice?.year}`, client);
 
             const link_btn = new ActionRowBuilder<ButtonBuilder>()
                 .addComponents(

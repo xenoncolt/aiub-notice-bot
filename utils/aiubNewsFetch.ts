@@ -178,7 +178,7 @@ export async function fetchNewsEvents(client: Client): Promise<void> {
                                     //     .setURL(link)
                                     //     .setTimestamp()
 
-                                    const { container, attachments }  = await noticeComponentV2(title!, short_desc, desc, img_paths, published_date);
+                                    const { container, attachments }  = await noticeComponentV2(title!, short_desc, desc, img_paths, published_date, client);
 
                                     const link_btn = new ActionRowBuilder<ButtonBuilder>()
                                         .addComponents(
@@ -234,7 +234,7 @@ export async function fetchNewsEvents(client: Client): Promise<void> {
                                         //     .setURL(link)
                                         //     .setFooter({ text: `\'/dm reset\' to stop sending notice` });
 
-                                        const { container, attachments } = await noticeComponentV2(title!, short_desc, desc, img_paths, published_date);
+                                        const { container, attachments } = await noticeComponentV2(title!, short_desc, desc, img_paths, published_date, client);
 
                                         const link_btn = new ActionRowBuilder<ButtonBuilder>()
                                             .addComponents(

@@ -8,7 +8,7 @@ import { loadEvents } from "./handler/eventHandler.js";
 import { Command } from "./types/Command.js";
 
 
-const client: ExtendedClient = new Client({
+const client = new Client({
     intents:[
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,

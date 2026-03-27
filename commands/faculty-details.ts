@@ -148,7 +148,7 @@ export default {
         );
     },
 
-    async buttonClick(interaction: ButtonInteraction) {
+    async buttonClick(interaction: ButtonInteraction, client: Client) {
         const customId = interaction.customId;
         
         // Handle comments button: faculty-comments_email_page
@@ -159,7 +159,7 @@ export default {
             const page = parseInt(parts[parts.length - 1]) || 1;
             const facultyEmail = parts.slice(1, -1).join('_');
             
-            await showCommentsPage(interaction, facultyEmail, page);
+            await showCommentsPage(interaction, facultyEmail, page, client);
             return;
         }
         
@@ -262,7 +262,7 @@ function paginateComments(comments: FacultyComment[], page: number): { pageComme
     };
 }
 
-async function showCommentsPage(interaction: ButtonInteraction, facultyEmail: string, page: number) {
+async function showCommentsPage(interaction: ButtonInteraction, facultyEmail: string, page: number, client: Client) {
     const allComments = await getAllCommentsByFaculty(facultyEmail);
     const { pageComments, totalPages, currentPage } = paginateComments(allComments, page);
     
@@ -311,7 +311,7 @@ async function showCommentsPage(interaction: ButtonInteraction, facultyEmail: st
         .setEmoji('✏️');
     
     const addCommentSection = new SectionBuilder()
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent('-# Share your experience'))
+        .addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# Share your experience\n-# If you face any issues, or information is not correct, use this command to report: </report:${(await client.application?.commands.fetch())?.find(c => c.name === 'report')?.id}> `))
         .setButtonAccessory(addCommentBtn);
     
     container.addSectionComponents(addCommentSection);

@@ -6,7 +6,9 @@ import fetch from "node-fetch";
 import config from "../config.json" with { type: "json" };
 import { readFileSync, writeFileSync } from "fs";
 import path from "path";
-import { pdfToPng } from "pdf-to-png-converter";
+import { exec } from "child_process";
+import { promisify } from "util";
+const execPromise = promisify(exec);
 import { fileURLToPath } from "url";
 import { readdir, unlink, writeFile } from "fs/promises";
 import { convertSeatPlanPDFsToJson } from "./processSeatPlan.js";
@@ -290,7 +292,7 @@ export async function fetchNotice(client: Client): Promise<void> {
                                 if (channel && (channel instanceof TextChannel || channel instanceof NewsChannel)) {
                                     try {
                                         const formatted_date = `${day} ${month} ${year}`;
-                                    const { container, attachments } = await noticeComponentV2(title, desc, full_desc, img_paths, formatted_date);
+                                    const { container, attachments } = await noticeComponentV2(title, desc, full_desc, img_paths, formatted_date, client);
 
                                     const link_btn = new ActionRowBuilder<ButtonBuilder>()
                                         .addComponents(
@@ -367,7 +369,7 @@ export async function fetchNotice(client: Client): Promise<void> {
                                 if (dm_channel.isSendable()) {
                                     const formatted_date = `${day} ${month} ${year}`;
 
-                                    const { container, attachments } = await noticeComponentV2(title, desc, full_desc, img_paths, formatted_date);
+                                    const { container, attachments } = await noticeComponentV2(title, desc, full_desc, img_paths, formatted_date, client);
 
                                     const link_btn = new ActionRowBuilder<ButtonBuilder>()
                                         .addComponents(
@@ -450,23 +452,26 @@ export async function downloadPDF(url: string): Promise<string> {
 export async function convertPDFToImages(pdf_path: string): Promise<string[] | string> {
     try {
         const output_dir = path.dirname(pdf_path);
-        // const pdf_buffer = readFileSync(pdf_path);
+        const base_name = path.basename(pdf_path, '.pdf');
+        const output_prefix = path.join(output_dir, base_name);
 
-        const images = await pdfToPng(pdf_path, {
-            disableFontFace: true,
-            useSystemFonts: false,
-            viewportScale: 3.0
-        });
+        // Linux: sudo apt install poppler-utils
+        // Windows: choco install poppler
+        await execPromise(`pdftoppm -png -r 300 "${pdf_path}" "${output_prefix}"`);
 
-        if (images.length > 5) return pdf_path;
+        // Find generated images (pdftoppm creates files like: prefix-1.png, prefix-2.png, etc.)
+        const files = await readdir(output_dir);
+        const image_paths = files
+            .filter(f => f.startsWith(base_name + '-') && f.endsWith('.png'))
+            .sort((a, b) => {
+                const numA = parseInt(a.match(/-(\d+)\.png$/)?.[1] || '0');
+                const numB = parseInt(b.match(/-(\d+)\.png$/)?.[1] || '0');
+                return numA - numB;
+            })
+            .map(f => path.join(output_dir, f));
 
-        const image_paths = [];
-
-        for (const [index, image] of images.entries()) {
-            const image_path = path.join(output_dir, `page-${index + 1}.png`);
-            writeFileSync(image_path, image.content);
-            image_paths.push(image_path);
-        }
+        if (image_paths.length > 5) return pdf_path;
+        if (image_paths.length === 0) throw new Error('No images generated');
 
         return image_paths;
     } catch (error) {

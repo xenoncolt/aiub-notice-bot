@@ -1,4 +1,4 @@
-import { ActionRowBuilder, APISelectMenuOption, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder, MessageFlags, SelectMenuComponentOptionData, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
+import { ActionRowBuilder, APISelectMenuOption, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, Client, EmbedBuilder, MessageFlags, SelectMenuComponentOptionData, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } from "discord.js";
 import config from "../config.json" with { type: "json" };
 import { readFileSync } from "fs";
 import { Command } from "../types/Command";
@@ -30,7 +30,7 @@ export default {
             ]
         }
     ],
-    async execute(interaction: ChatInputCommandInteraction) {
+    async execute(interaction: ChatInputCommandInteraction, client: Client) {
         try {
             let data = readFileSync('./database/notice.json');
             let notices = JSON.parse(data.toString());
@@ -58,7 +58,7 @@ export default {
                 //     }
                 // }
 
-                const { container, attachments } = await noticeComponentV2(latest_notice.title, latest_notice.desc, latest_notice.full_desc, latest_notice.img_urls, `${latest_notice.day} ${latest_notice.month} ${latest_notice.year}`);
+                const { container, attachments } = await noticeComponentV2(latest_notice.title, latest_notice.desc, latest_notice.full_desc, latest_notice.img_urls, `${latest_notice.day} ${latest_notice.month} ${latest_notice.year}`, client);
 
                 const link_btn = new ActionRowBuilder<ButtonBuilder>()
                     .addComponents(
@@ -89,7 +89,7 @@ export default {
                 const latest_news = await news_db.get(`SELECT * FROM aiub ORDER BY ROWID DESC LIMIT 1`);
 
                 if (latest_news) {
-                    const { container, attachments } = await noticeComponentV2(latest_news.title, '', latest_news.desc, latest_news.img_urls, latest_news.published_date);
+                    const { container, attachments } = await noticeComponentV2(latest_news.title, '', latest_news.desc, latest_news.img_urls, latest_news.published_date, client);
 
                     const link_btn = new ActionRowBuilder<ButtonBuilder>()
                     .addComponents(

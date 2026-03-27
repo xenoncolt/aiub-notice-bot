@@ -1,11 +1,11 @@
-import { AttachmentBuilder, ButtonBuilder, ComponentBuilder, ContainerBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder, SectionBuilder, SeparatorBuilder, SeparatorSpacingSize, TextDisplayBuilder, ThumbnailBuilder } from "discord.js";
+import { AttachmentBuilder, ButtonBuilder, Client, ComponentBuilder, ContainerBuilder, MediaGalleryBuilder, MediaGalleryItemBuilder, SectionBuilder, SeparatorBuilder, SeparatorSpacingSize, TextDisplayBuilder, ThumbnailBuilder } from "discord.js";
 import { downloadImage } from "./downloadImage.js";
 
-export async function noticeComponentV2(title: string, desc: string, full_desc: string | undefined, img_urls: string[], date: string): Promise<{ container: ContainerBuilder, attachments: AttachmentBuilder[] }> {
+export async function noticeComponentV2(title: string, desc: string, full_desc: string | undefined, img_urls: string[], date: string, client: Client): Promise<{ container: ContainerBuilder, attachments: AttachmentBuilder[] }> {
     const container = new ContainerBuilder();
 
     const title_text = `# ${title}\nPublished Date: ${date}`;
-    const footer_text = `-# Note from Bot: Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY).\n-# Always verify information from official [sources](https://www.aiub.edu/category/notices)\n-# Remember, this bot is not a replacement for official announcements.\n-# If you face any issues, or notice is not correct, use this command to report: \`/report\``;
+    const footer_text = `-# Note from Bot: Please check our [Terms of Service](https://xenoncolt.github.io/file_storage/TERMS_OF_SERVICE) & [policy](https://xenoncolt.github.io/file_storage/PRIVACY_POLICY).\n-# Always verify information from official [sources](https://www.aiub.edu/category/notices)\n-# Remember, this bot is not a replacement for official announcements.\n-# If you face any issues, or notice is not correct, use this command to report: </report:${(await client.application?.commands.fetch())?.find(c => c.name === 'report')?.id}> `;
 
     const available_space = 4000 - (title_text.length + footer_text.length); 
 
@@ -33,7 +33,7 @@ export async function noticeComponentV2(title: string, desc: string, full_desc: 
     // }
     container.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            full_desc_text
+            full_desc_text || "No description provided."
         )
     );
 

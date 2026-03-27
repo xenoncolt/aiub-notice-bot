@@ -1,4 +1,4 @@
-import { APIContainerComponent, AttachmentBuilder, ButtonInteraction, ButtonStyle, ChannelType, ComponentType, ContainerBuilder, EmbedBuilder, Events, Interaction, MessageFlags, PermissionFlagsBits, SectionBuilder, TextDisplayBuilder, ThumbnailBuilder } from "discord.js";
+import { APIContainerComponent, AttachmentBuilder, ButtonInteraction, ButtonStyle, ChannelType, ComponentType, ContainerBuilder, EmbedBuilder, Events, Interaction, MessageFlags, PermissionFlagsBits, SectionBuilder, StringSelectMenuInteraction, TextDisplayBuilder, ThumbnailBuilder } from "discord.js";
 import { ExtendedClient } from "../../types/ExtendedClient.js";
 import config from "../../config.json" with { type: "json" };
 import { convertPDFToImages, downloadPDF } from "../../utils/noticeFetch.js";
@@ -19,11 +19,26 @@ export default {
                 await cmd.execute(interaction, client);
             } catch (error) {
                 console.error(error);
-                await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true});
+                await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral});
                 await client.users.cache.get(config.owner)?.send({ content: `Something wrong with your code, Error: \n\`\`\`cmd\n${error}\`\`\``});
             }
         } else if (interaction.isStringSelectMenu()) {
-            // this need to be change later
+            const customId = interaction.customId;
+            
+            // Handle routine select menus
+            if (customId.startsWith('routine-remove-select')) {
+                const routineCmd = client.commands.get('routine');
+                if (routineCmd && routineCmd.selectMenu) {
+                    try {
+                        await routineCmd.selectMenu(interaction, client);
+                    } catch (error) {
+                        console.error('Error handling routine selectMenu:', error);
+                    }
+                    return;
+                }
+            }
+            
+            // Handle PDF selection (existing code)
             const pdf_url = interaction.values[0];
 
             const pdf_name = pdf_url.split('/').pop()?.replace('.pdf', '').replaceAll('-', ' ');
@@ -63,11 +78,40 @@ export default {
 
             try {
                 await cmd.autocomplete(interaction, client);
-            } catch (error) {
-                console.error('Error handling autocomplete interaction: ', error);
+            } catch (error: any) {
+                // Ignore "already acknowledged" errors - happens with rapid typing
+                if (error?.code !== 40060) {
+                    console.error('Error handling autocomplete interaction: ', error);
+                }
             }
         } else if (interaction.isButton()) {
             const buttonId = interaction.customId;
+
+            // Check for routine buttons (both /routine and /routine-add use same buttons)
+            if (buttonId.startsWith('routine-')) {
+                const routineCmd = client.commands.get('routine');
+                if (routineCmd && routineCmd.buttonClick) {
+                    try {
+                        await routineCmd.buttonClick(interaction as ButtonInteraction, client);
+                    } catch (error) {
+                        console.error('Error handling routine button:', error);
+                    }
+                    return;
+                }
+            }
+
+            // Check for faculty-details buttons (comments, add-comment, pagination)
+            if (buttonId.startsWith('faculty-comments_') || buttonId.startsWith('faculty-add-comment_')) {
+                const facultyCmd = client.commands.get('faculty-details');
+                if (facultyCmd && facultyCmd.buttonClick) {
+                    try {
+                        await facultyCmd.buttonClick(interaction as ButtonInteraction, client);
+                    } catch (error) {
+                        console.error('Error handling faculty-details button:', error);
+                    }
+                    return;
+                }
+            }
 
             switch (buttonId) {
                 case 'autoSetupNotice':
@@ -77,6 +121,25 @@ export default {
                     console.log(`Unknown button interaction: ${buttonId}`);
             }
         } else if (interaction.isModalSubmit()) {
+            // Check for routine modals
+            if (interaction.customId.startsWith('routine-add-modal-')) {
+                const routineCmd = client.commands.get('routine');
+                if (routineCmd && routineCmd.modalSubmit) {
+                    try {
+                        await routineCmd.modalSubmit(interaction, client);
+                    } catch (error) {
+                        console.error('Error handling routine modal:', error);
+                        if (!interaction.replied && !interaction.deferred) {
+                            await interaction.reply({
+                                content: 'An error occurred. Please try again.',
+                                flags: MessageFlags.Ephemeral
+                            });
+                        }
+                    }
+                    return;
+                }
+            }
+
             const modal_cmds = Array.from(client.commands.values()).find(cmd => 
                 interaction.customId.startsWith(cmd.name) && cmd.modalSubmit
             );
@@ -84,7 +147,7 @@ export default {
             if (!modal_cmds) {
                 console.warn(`No command found for modal submit with customId: ${interaction.customId}`);
                 await interaction.reply({
-                    content: `This modal is not recognized.`, ephemeral: true
+                    content: `This modal is not recognized.`, flags: MessageFlags.Ephemeral
                 });
                 return;
             }
@@ -95,7 +158,7 @@ export default {
                 } catch (error) {
                     console.error(`Error executing modal submit for command ${modal_cmds.name}:`, error);
                     await interaction.reply({
-                        content: `There was an error while executing this modal submit command!`, ephemeral: true
+                        content: `There was an error while executing this modal submit command!`, flags: MessageFlags.Ephemeral
                     });
                 }
             }
@@ -106,7 +169,7 @@ export default {
 async function handleAutoSetupNotice(interaction: ButtonInteraction) {
     if (!interaction.guild?.members.me?.permissions.has(PermissionFlagsBits.ManageChannels)) return interaction.reply({ 
         content: 'I need `Manage Channel` permission to create channel. Please give me this permission and try again.',
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
     });
 
     try {
