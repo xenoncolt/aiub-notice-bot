@@ -6,3 +6,6 @@ package-lock.json
 /database
 /database/channel.sqlite
 /database/data.sqlite
+/database/channel.sqlite
+/database/data.sqlite
+/download
