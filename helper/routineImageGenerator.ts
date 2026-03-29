@@ -124,7 +124,7 @@ export async function generateRoutineImage(schedules: CourseSchedule[]): Promise
     ctx.fillStyle = '#FFFFFF';
     ctx.font = 'bold 24px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('📅 Weekly Class Routine', canvasWidth / 2, 40);
+    ctx.fillText('Weekly Class Routine', canvasWidth / 2, 40);
 
     // Day headers
     const gridStartY = headerHeight + dayHeaderHeight;
@@ -238,7 +238,7 @@ export async function generateRoutineImage(schedules: CourseSchedule[]): Promise
                 // Room - BIGGER font
                 textY += 16;
                 ctx.font = 'bold 12px Arial';
-                ctx.fillText(`📍 ${slot.course.room}`, textX, textY);
+                ctx.fillText(`${slot.course.room}`, textX, textY);
                 
                 // Type badge for Lab
                 if (slot.course.type === 'Lab') {
@@ -323,7 +323,7 @@ export async function generateBlankRoutineImage(): Promise<Buffer> {
     ctx.fillStyle = '#FFFFFF';
     ctx.font = 'bold 24px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText('📅 Weekly Class Routine', canvasWidth / 2, 40);
+    ctx.fillText('Weekly Class Routine', canvasWidth / 2, 40);
 
     // Day headers
     const gridStartY = headerHeight + dayHeaderHeight;

@@ -99,7 +99,7 @@ async function sendRoutineResponse(
         );
 
         container.addTextDisplayComponents(
-            new TextDisplayBuilder().setContent(`**No courses added yet!**\n\nUse the **➕ Add Course** button below or \`/routine-add\` command to add courses.`)
+            new TextDisplayBuilder().setContent(`**No courses added yet!**\n\nUse the **Add Course** button below or \`/routine-add\` command to add courses.`)
         );
 
         container.addSeparatorComponents(
@@ -128,7 +128,7 @@ async function sendRoutineResponse(
             new SeparatorBuilder().setDivider(true).setSpacing(SeparatorSpacingSize.Small)
         );
 
-        const courseList = savedCourses.map(c => `• ${c.course_title} [${c.section}]`).join('\n');
+        const courseList = savedCourses.map(c => `• ${c.course_title}`).join('\n');
         container.addTextDisplayComponents(
             new TextDisplayBuilder().setContent(`**Courses (${savedCourses.length}):**\n${courseList}`)
         );
