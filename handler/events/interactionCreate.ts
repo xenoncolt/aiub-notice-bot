@@ -113,6 +113,19 @@ export default {
                 }
             }
 
+            // Check for setup-verify buttons
+            if (buttonId.startsWith('setup-verify_')) {
+                const verifyCmd = client.commands.get('setup-verify');
+                if (verifyCmd && verifyCmd.buttonClick) {
+                    try {
+                        await verifyCmd.buttonClick(interaction as ButtonInteraction, client);
+                    } catch (error) {
+                        console.error('Error handling setup-verify button:', error);
+                    }
+                    return;
+                }
+            }
+
             switch (buttonId) {
                 case 'autoSetupNotice':
                     await handleAutoSetupNotice(interaction as ButtonInteraction);
