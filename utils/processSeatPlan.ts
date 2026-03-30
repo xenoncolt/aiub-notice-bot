@@ -12,7 +12,8 @@ const __dirname = dirname(__filename);
 const seat_plan_pdf_dir = join(__dirname, `../database/seatplanPDF`);
 
 
-// TODO: From student ID, return name, department, sl, room, column
+// PDF line format: "SL STUDENT_ID NAME DEPARTMENT ROOM_NO COLUMN_NO"
+// Example: "1 26-63948-1 FARIHA FARBIN DIYA English 3120 2"
 export async function convertSeatPlanPDFsToJson(): Promise<void> {
     try {
         const files = await readdir(seat_plan_pdf_dir);
@@ -31,23 +32,26 @@ export async function convertSeatPlanPDFsToJson(): Promise<void> {
                 const data = await PdfParse(file_buffer);
                 const text = data.text;
                 const lines = text.split('\n');
-                // console.log("First 5 lines:", lines.slice(0, 5));
+
                 for (let i = 0; i < lines.length; i++) {
                     const match = lines[i].match(id_pattern);
                     if (match) {
-                        // Separate each word if there is a space in between 
                         const words = lines[i].trim().split(/\s+/);
 
-                        if (words.length < 4) continue;
+                        // Need at least: SL, ID, NAME(1+), DEPT, ROOM, COLUMN = minimum 6 words
+                        if (words.length < 6) continue;
 
                         const sl = Number(words[0]) % 8;
                         const student_id = words[1];
-                        const department = String(words[words.length - 1]);
-                        const name = words.slice(2, words.length - 1).join(' ');
+                        // Last word is column, second last is room, third last is department
+                        const column = Number(words[words.length - 1]);
+                        const room = words[words.length - 2];
+                        const department = words[words.length - 3];
+                        // Name is everything between student_id and department
+                        const name = words.slice(2, words.length - 3).join(' ');
 
-                        const next_line_words = lines[i + 1].trim().split(/\s+/);
-                        const room = next_line_words[0];
-                        const column = Number(next_line_words[1]);
+                        // Validate parsed data
+                        if (!student_id || !name || isNaN(column)) continue;
 
                         const each_student_seat: SeatPlan = {
                             name,
